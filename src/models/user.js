@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 // Define the Comment schema
-const commentSchema = new mongoose.Schema({
+const UserSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
@@ -9,12 +9,10 @@ const commentSchema = new mongoose.Schema({
   video: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Video', 
-    required: true,
   },
   shared: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Shared', 
-    required: true,
   },
   timestamp: {
     type: Date,
@@ -23,4 +21,4 @@ const commentSchema = new mongoose.Schema({
 });
 
 // Create and export the Comment model
-module.exports = mongoose.model('Comment', commentSchema);
+module.exports = mongoose.model('User', UserSchema);

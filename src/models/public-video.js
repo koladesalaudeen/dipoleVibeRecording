@@ -36,4 +36,4 @@ const publicVideoSchema = new mongoose.Schema({
     },
   });
 
-  module.exports = mongoose.model('Video', publicVideoSchema);
+  module.exports = mongoose.model('PublicVideo', publicVideoSchema);

@@ -1,33 +1,84 @@
-const cloudinary = require('cloudinary').v2; // Use the Cloudinary SDK
-const { CloudinaryStorage } = require('multer-storage-cloudinary'); // If you're using file uploads
+const cloudinary =require('cloudinary').v2; 
+const { CloudinaryStorage } =require('multer-storage-cloudinary');
+const storage =require('../../index')
+const speech =require('@google-cloud/speech');
 
-// Configure Cloudinary with your credentials (load from .env)
+const client = new speech.SpeechClient();
+
+
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
+  cloud_name:process.env.CLOUDINARY_CLOUD_NAME,
+  api_key:process.env.CLOUDINARY_API_KEY,
+  api_secret:process.env.CLOUDINARY_API_SECRET,
 });
 
-// If you're handling file uploads, set up a Cloudinary storage engine with Multer
+
 const cloudinaryStorage = new CloudinaryStorage({
   cloudinary,
   params: {
-    folder: 'uploads', // Specify the folder in Cloudinary where uploads will be stored
-    allowed_formats: ['mp4', 'avi', 'mkv'], // Specify allowed file formats
+    folder: 'samples', 
+    allowed_formats: ['mp4', 'avi', 'mkv', 'jpeg'], 
   },
 });
 
-// Function to upload a video to Cloudinary
-async function uploadVideo(file) {
-  try {
-    const result = await cloudinary.uploader.upload(file.path, {
-      resource_type: 'video',
-    });
 
-    // Return the public URL of the uploaded video
-    return result.secure_url;
+async function uploadVideo(base64String) {
+  try {
+    // const { secure_url } = await cloudinary.uploader.upload(`data:video/mp4;base64,${base64String}`, {
+    //   resource_type: 'video',
+    // });
+    transcribeVideo(base64String)
+    // return secure_url;
   } catch (error) {
     throw new Error('Error uploading video to Cloudinary: ' + error.message);
+  }
+}
+
+async function transcribeVideo(base64String){
+  const recordURI = uploadBase64MP4ToBucket(base64String, 'testRecord');
+
+  const audio = {
+    content: recordURI,
+  };
+
+  const config = {
+    encoding: 'LINEAR16',
+    sampleRateHertz: 16000,
+    languageCode: 'en-US',
+  };
+
+  const request = {
+    audio: audio,
+    config: config,
+  };
+
+  try{
+    const [response] = await client.longRunningRecognize(request);
+
+    const transcription = response.results
+
+    .map(result => result.alternatives[0].transcript)
+    .join('\n');
+  console.log(`Transcription: ${transcription}`);
+  }
+  catch(error){
+    console.error(`Error: ${error.message}`);
+  }
+}
+
+async function uploadBase64MP4ToBucket(base64String, objectName) {
+  const bucketName ='dipole-vibe-recordings';
+  try {
+    const binaryData = Buffer.from(base64String, 'base64');
+
+    await storage.bucket(bucketName).file(objectName).save(binaryData);
+
+    const fileURI = `gs://${bucketName}/${objectName}`;
+
+    console.log(`MP4 file uploaded as "${objectName}" to ${bucketName}.`);
+    return fileURI;
+  } catch (error) {
+    console.error(`Error uploading MP4 file: ${error.message}`);
   }
 }
 
@@ -59,4 +110,6 @@ module.exports = {
   uploadVideo,
   getVideoMetadata,
   deleteVideo,
+  transcribeVideo,
+  cloudinaryStorage
 };

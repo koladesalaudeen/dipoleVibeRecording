@@ -37,4 +37,4 @@ const privateVideoSchema = new mongoose.Schema({
     },
   });
 
-  module.exports = mongoose.model('Video', privateVideoSchema);
+  module.exports = mongoose.model('PrivateVideo', privateVideoSchema);

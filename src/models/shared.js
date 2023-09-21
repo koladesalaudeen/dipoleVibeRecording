@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 // Define the Comment schema
-const commentSchema = new mongoose.Schema({
+const SharedSchema = new mongoose.Schema({
   user: {
     type: String,
     ref: 'user',
@@ -19,4 +19,4 @@ const commentSchema = new mongoose.Schema({
 });
 
 // Create and export the Comment model
-module.exports = mongoose.model('Comment', commentSchema);
+module.exports = mongoose.model('Shared', SharedSchema);
