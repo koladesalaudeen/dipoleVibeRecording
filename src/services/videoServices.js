@@ -1,7 +1,10 @@
 const cloudinary =require('cloudinary').v2; 
 const { CloudinaryStorage } =require('multer-storage-cloudinary');
-const storage =require('../../index')
 const speech =require('@google-cloud/speech');
+const { Storage } = require('@google-cloud/storage');
+
+// Create a new instance of the storage client
+const storage = new Storage();
 
 const client = new speech.SpeechClient();
 
@@ -27,7 +30,7 @@ async function uploadVideo(base64String) {
     // const { secure_url } = await cloudinary.uploader.upload(`data:video/mp4;base64,${base64String}`, {
     //   resource_type: 'video',
     // });
-    transcribeVideo(base64String)
+    await transcribeVideo(base64String)
     // return secure_url;
   } catch (error) {
     throw new Error('Error uploading video to Cloudinary: ' + error.message);
@@ -35,16 +38,17 @@ async function uploadVideo(base64String) {
 }
 
 async function transcribeVideo(base64String){
-  const recordURI = uploadBase64MP4ToBucket(base64String, 'testRecord');
+  //const recordURI = await uploadBase64MP4ToBucket(base64String, 'testRecord');
 
   const audio = {
-    content: recordURI,
+     uri: 'gs://dipole-vibe-recordings/samAudio.flac',
   };
 
   const config = {
-    encoding: 'LINEAR16',
-    sampleRateHertz: 16000,
+    encoding: 'FLAC',
+    sampleRateHertz: 44100,
     languageCode: 'en-US',
+    audioChannelCount: 2
   };
 
   const request = {
@@ -53,16 +57,21 @@ async function transcribeVideo(base64String){
   };
 
   try{
-    const [response] = await client.longRunningRecognize(request);
+    // const [response] = await client.longRunningRecognize(request);
+    // client.recognize
+    // console.log(response);
+    const [operation] = await client.longRunningRecognize(request);
+    const [response] = await operation.promise();
+    console.log(response);
 
     const transcription = response.results
-
     .map(result => result.alternatives[0].transcript)
     .join('\n');
-  console.log(`Transcription: ${transcription}`);
+
+    console.log(`Transcription: ${transcription}`);
   }
   catch(error){
-    console.error(`Error: ${error.message}`);
+    console.error(`speech-to-text error: ${error.message}`);
   }
 }
 
@@ -76,6 +85,7 @@ async function uploadBase64MP4ToBucket(base64String, objectName) {
     const fileURI = `gs://${bucketName}/${objectName}`;
 
     console.log(`MP4 file uploaded as "${objectName}" to ${bucketName}.`);
+
     return fileURI;
   } catch (error) {
     console.error(`Error uploading MP4 file: ${error.message}`);

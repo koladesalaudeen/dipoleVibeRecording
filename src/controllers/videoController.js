@@ -3,7 +3,6 @@ const videoService = require('../services/videoServices');
 // Controller function to upload a video
 async function uploadVideo(req, res) {
   try {
-    videoService.transcribeVideo('');
     const { base64Video } = req.body;
     
     if (!base64Video) {

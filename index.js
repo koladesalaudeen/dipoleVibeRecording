@@ -69,8 +69,8 @@ app.use('/comments', commentRoutes);
 app.use('/user', userRoute)
 
 
-const server = app.listen(3000, () => {
-  console.log('Server is running on port 3000');
+const server = app.listen(3001, () => {
+  console.log('Server is running on port 3001');
 });
 
 module.exports = storage;
