@@ -1,12 +1,5 @@
 const cloudinary =require('cloudinary').v2; 
 const { CloudinaryStorage } =require('multer-storage-cloudinary');
-const speech =require('@google-cloud/speech');
-const { Storage } = require('@google-cloud/storage');
-
-// Create a new instance of the storage client
-const storage = new Storage();
-
-const client = new speech.SpeechClient();
 
 
 cloudinary.config({
@@ -27,68 +20,12 @@ const cloudinaryStorage = new CloudinaryStorage({
 
 async function uploadVideo(base64String) {
   try {
-    // const { secure_url } = await cloudinary.uploader.upload(`data:video/mp4;base64,${base64String}`, {
-    //   resource_type: 'video',
-    // });
-    await transcribeVideo(base64String)
-    // return secure_url;
+    const { secure_url } = await cloudinary.uploader.upload(`data:video/mp4;base64,${base64String}`, {
+      resource_type: 'video',
+    });
+    return secure_url;
   } catch (error) {
     throw new Error('Error uploading video to Cloudinary: ' + error.message);
-  }
-}
-
-async function transcribeVideo(base64String){
-  //const recordURI = await uploadBase64MP4ToBucket(base64String, 'testRecord');
-
-  const audio = {
-     uri: 'gs://dipole-vibe-recordings/samAudio.flac',
-  };
-
-  const config = {
-    encoding: 'FLAC',
-    sampleRateHertz: 44100,
-    languageCode: 'en-US',
-    audioChannelCount: 2
-  };
-
-  const request = {
-    audio: audio,
-    config: config,
-  };
-
-  try{
-    // const [response] = await client.longRunningRecognize(request);
-    // client.recognize
-    // console.log(response);
-    const [operation] = await client.longRunningRecognize(request);
-    const [response] = await operation.promise();
-    console.log(response);
-
-    const transcription = response.results
-    .map(result => result.alternatives[0].transcript)
-    .join('\n');
-
-    console.log(`Transcription: ${transcription}`);
-  }
-  catch(error){
-    console.error(`speech-to-text error: ${error.message}`);
-  }
-}
-
-async function uploadBase64MP4ToBucket(base64String, objectName) {
-  const bucketName ='dipole-vibe-recordings';
-  try {
-    const binaryData = Buffer.from(base64String, 'base64');
-
-    await storage.bucket(bucketName).file(objectName).save(binaryData);
-
-    const fileURI = `gs://${bucketName}/${objectName}`;
-
-    console.log(`MP4 file uploaded as "${objectName}" to ${bucketName}.`);
-
-    return fileURI;
-  } catch (error) {
-    console.error(`Error uploading MP4 file: ${error.message}`);
   }
 }
 
@@ -120,6 +57,5 @@ module.exports = {
   uploadVideo,
   getVideoMetadata,
   deleteVideo,
-  transcribeVideo,
   cloudinaryStorage
 };

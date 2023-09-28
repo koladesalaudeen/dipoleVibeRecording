@@ -8,12 +8,14 @@ const {Storage} = require('@google-cloud/storage');
 const app = express();
 app.use(express.json( { limit: '25mb'} ));
 app.use(express.urlencoded({ limit: '25mb'}));
+const cors = require('cors');
 
 const storage = new Storage();
 
 const videoRoutes = require('./src/routes/videoRoute');
 const commentRoutes = require('./src/routes/commentRoute');
 const userRoute= require('./src/routes/userRoute')
+const audioRoute = require('./src/routes/audioRoute');
 
 mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
@@ -63,8 +65,10 @@ async function createBucketIfNotExist() {
 
 createBucketIfNotExist();
 
+app.use(cors());
 // Use the video routes
 app.use('/videos', videoRoutes);
+app.use('/audio', audioRoute);
 app.use('/comments', commentRoutes);
 app.use('/user', userRoute)
 

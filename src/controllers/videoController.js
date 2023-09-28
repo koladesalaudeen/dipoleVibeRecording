@@ -3,13 +3,13 @@ const videoService = require('../services/videoServices');
 // Controller function to upload a video
 async function uploadVideo(req, res) {
   try {
-    const { base64Video } = req.body;
-    
-    if (!base64Video) {
-      return res.status(400).json({ message: 'No video file uploaded.' });
-    }
+    const { videoStrem } = req.body;
+    console.log(videoStrem)
+    // if (!base64Video) {
+    //   return res.status(400).json({ message: 'No video file uploaded.' });
+    // }
 
-    const videoUrl = await videoService.uploadVideo(base64Video);
+    const videoUrl = await videoService.uploadVideo(videoStrem);
 
     return res.status(201).json({ videoUrl });
   } catch (error) {
