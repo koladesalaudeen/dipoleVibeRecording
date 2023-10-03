@@ -1,24 +1,70 @@
 const videoService = require('../services/videoServices');
 
-// Controller function to upload a video
+const cloudinary = require('cloudinary').v2;
+
 async function uploadVideo(req, res) {
   try {
-    const { videoStrem } = req.body;
-    console.log(videoStrem)
-    // if (!base64Video) {
-    //   return res.status(400).json({ message: 'No video file uploaded.' });
-    // }
+    const videoBuffer = req.file.buffer;
 
-    const videoUrl = await videoService.uploadVideo(videoStrem);
+    if (!videoBuffer) {
+      return res.status(400).json({ message: 'No video data provided.' });
+    }
+    const videoUrl = await videoService.uploadVideo();
 
-    return res.status(201).json({ videoUrl });
+    return res.status(201).json({ videoUrl: videoUrl });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Error uploading video.' });
   }
 }
 
+async function fetchAllPublicVideos(req, res){
+  try{
+    const videoList = await videoService.fetchAllPublicVideos();
+
+    return res.status(200).json(videoList);
+  }
+  catch(error){
+    return res.status(500).json({ message: 'Error retrieving videos'})
+  }
+}
+
+async function viewVideoById(req, res){
+  const { videoId } = req.params;
+
+  try {
+    const video = await videoService.fetchVideoById(videoId);
+
+    if (!video) {
+      return res.status(404).json({ message: 'Video not found' });
+    }
+
+    res.status(200).json(video);
+  } catch (error) {
+    console.error('Error fetching video:', error);
+    return res.status(500).json({ message: 'Error fetching video' });
+  }
+}
+// Controller function to upload a video
+// async function uploadVideo(req, res) {
+//   try {
+//     const videoBuffer = req.file.buffer;
+//     console.log(video)
+//     // if (!videoBuffer) {
+//     //   return res.status(400).json({ message: 'No video file uploaded.' });
+//     // }
+
+//     const videoUrl = await videoService.uploadVideo(videoBuffer);
+
+//     return res.status(201).json({ videoUrl });
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({ message: 'Error uploading video.' });
+//   }
+// }
+
 // Controller function to retrieve video metadata by public URL
+
 async function getVideoMetadata(req, res) {
   try {
     const publicUrl = req.query.url;
@@ -54,4 +100,6 @@ module.exports = {
   uploadVideo,
   getVideoMetadata,
   deleteVideo,
+  fetchAllPublicVideos,
+  viewVideoById
 };

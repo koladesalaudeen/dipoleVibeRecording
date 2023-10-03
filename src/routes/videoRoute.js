@@ -6,10 +6,11 @@ const getVideoMetadata = require('../controllers/videoController').getVideoMetad
 const deleteVideo = require('../controllers/videoController').deleteVideo;
 const cloudinaryStorage = require('../services/videoServices').cloudinaryStorage;
 
-
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 // Set up Multer to handle video file uploads
-const upload = multer({ storage: cloudinaryStorage,
-                        limits: { fileSize: 10000000 } });
+// const upload = multer({ storage: cloudinaryStorage,
+//                         limits: { fileSize: 10000000 } });
 
 // Define routes
 router.post('/upload', upload.single('video'), uploadVideo);

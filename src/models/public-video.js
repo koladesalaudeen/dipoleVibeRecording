@@ -28,7 +28,7 @@ const publicVideoSchema = new mongoose.Schema({
       type: Map
     },
     views: {
-        type: number,
+        type: Number,
       },
     uploadedAt: {
       type: Date,

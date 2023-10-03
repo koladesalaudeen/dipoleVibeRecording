@@ -16,8 +16,8 @@ const bufferToStream = (buffer) => {
 }
 
 async function whisperTranscribe (buffer) {
-    const  formData  =  new  FormData();
-    const  audioStream  =  bufferToStream(buffer);
+    const formData = new FormData();
+    const audioStream = bufferToStream(buffer);
     formData.append('file', audioStream, { filename: 'audio.m4a', contentType: 'm4a' });
     formData.append('model', 'whisper-1');
     formData.append('response_format', 'json');
@@ -26,26 +26,14 @@ async function whisperTranscribe (buffer) {
         "Content-Type": `multipart/form-data; boundary=${formData._boundary}`,
         "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
       },
-    };
-    let retries = 3; // Number of retries
-    const delayMs = 60000; // Delay in milliseconds between retries
-  
-    while (retries > 0) {
-      try {
+    };  
+    try {
         const response = await axios.post('https://api.openai.com/v1/audio/transcriptions', formData, config);
         const transcription = response.data.text;
         return transcription;
       } catch (error) {
-        if (error.response && error.response.status === 429) {
-          // Rate limited, retry after a delay
-          await new Promise(resolve => setTimeout(resolve, delayMs));
-          retries--;
-        } else {
-          // Handle other errors
-          throw error;
-        }
+        console.error(`Error connecting openai whisper ${error.message}`);
       }
-    }
 
     throw new Error('Max retries reached');
 }
@@ -152,9 +140,62 @@ async function convertToFlac(inputBuffer) {
     transcribeAudio(audioBlob)
   }
 
+const Queue = require('bull');
+const OpenAI = require('openai');
+const fs = require('fs');
+const path = require('path');
+const { v4: uuidv4 } = require('uuid');
 
-  module.exports = {transcribeAudio,
-                    convertToFlac,
-                    bufferToStream,
-                    whisperTranscribe
-                   };
+const OpenAIAPIKey = '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';
+const openai = new OpenAI({
+  apiKey: OpenAIAPIKey
+});
+
+function initializeQueue() {
+  const transcriptionQueue = new Queue('transcriptionQueue');
+
+  transcriptionQueue.process(async job => {
+    try {
+      const transcriptionResult = await openai.transcribeVideo({
+        video: fs.createReadStream(job.data.videoFilePath)
+      });
+      return transcriptionResult.data.transcription;
+    } catch (error) {
+      console.error('Error transcribing video:', error);
+      throw error;
+    }
+  });
+
+  return transcriptionQueue;
+}
+
+function handleVideoSubmission(transcriptionQueue) {
+  return async (req, res) => {
+    const videoFile = req.files.video;
+
+    const fileId = uuidv4();
+    const filePath = path.join(__dirname, 'uploads', `${fileId}.mp4`);
+
+    videoFile.mv(filePath, async (err) => {
+      if (err) {
+        return res.status(500).send(err);
+      }
+
+      const job = await transcriptionQueue.add({ videoFilePath: filePath });
+
+      res.json({ jobId: job.id });
+    });
+  };
+}
+
+module.exports = {
+  initializeQueue,
+  handleVideoSubmission
+};
+
+
+  // module.exports = {transcribeAudio,
+  //                   convertToFlac,
+  //                   bufferToStream,
+  //                   whisperTranscribe
+  //                  };

@@ -1,3 +1,4 @@
+const PublicVideo = require('../models/public-video')
 const cloudinary =require('cloudinary').v2; 
 const { CloudinaryStorage } =require('multer-storage-cloudinary');
 
@@ -18,18 +19,21 @@ const cloudinaryStorage = new CloudinaryStorage({
 });
 
 
-async function uploadVideo(base64String) {
+async function uploadVideo( videoBuffer ) {
   try {
-    const { secure_url } = await cloudinary.uploader.upload(`data:video/mp4;base64,${base64String}`, {
+    const { secure_url } = await cloudinary.uploader.upload(`data:video/mp4;base64,${videoBuffer.toString('base64')}`, {
       resource_type: 'video',
     });
+
+    const video = new PublicVideo({ videoSecureURL: secure_url });
+    await video.save();
+
     return secure_url;
   } catch (error) {
-    throw new Error('Error uploading video to Cloudinary: ' + error.message);
+    throw new Error('Error uploading video to Cloudinary: ' + error.message );
   }
 }
 
-// Function to retrieve video metadata from Cloudinary by its public URL
 async function getVideoMetadata(publicUrl) {
   try {
     const video = await cloudinary.api.resource(publicUrl);
@@ -41,7 +45,6 @@ async function getVideoMetadata(publicUrl) {
   }
 }
 
-// Function to delete a video from Cloudinary by its public ID
 async function deleteVideo(publicId) {
   try {
     const result = await cloudinary.uploader.destroy(publicId);
@@ -53,9 +56,40 @@ async function deleteVideo(publicId) {
   }
 }
 
+async function fetchVideoById(videoId){
+  try {
+    const video = await PublicVideo.findOne({ videoId });
+
+    return video;
+  } catch (error) {
+    throw new Error('Error fetching video by videoId');
+  }
+}
+
+async function fetchAllPublicVideos(){
+  try {
+    const page = parseInt(req.query.page) || 1; // Page number (default to 1)
+    const pageSize = parseInt(req.query.pageSize) || 10; // Number of items per page (default to 10)
+
+    // Calculate the number of documents to skip
+    const skip = (page - 1) * pageSize;
+
+    // Query the database with skip and limit
+    const videoList = await PublicVideo.find()
+      .skip(skip)
+      .limit(pageSize);
+
+    return videoList;
+  } catch (error) {
+    throw new Error('Error retrieving videos');
+  }
+}
+
 module.exports = {
   uploadVideo,
   getVideoMetadata,
   deleteVideo,
+  fetchAllPublicVideos,
+  fetchVideoById,
   cloudinaryStorage
 };
