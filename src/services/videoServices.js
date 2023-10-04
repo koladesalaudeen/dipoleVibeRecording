@@ -25,9 +25,6 @@ async function uploadVideo( videoBuffer ) {
       resource_type: 'video',
     });
 
-    const video = new PublicVideo({ videoSecureURL: secure_url });
-    await video.save();
-
     return secure_url;
   } catch (error) {
     throw new Error('Error uploading video to Cloudinary: ' + error.message );
