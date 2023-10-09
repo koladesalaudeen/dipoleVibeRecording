@@ -22,25 +22,13 @@ async function uploadVideo(req, res) {
 
     const videoUrl = await videoService.uploadVideo(videoBuffer, reqBody);
     console.log(videoUrl);
-    
-    const videoBuffer = req.file.buffer;
-    const { title, summary } = req.body;
+  }
+  catch(error){
+      console.error(error);
+      return res.status(500).json({ message: 'Error uploading video.' });
+  }
 
-
-    if (!videoBuffer || !title || !summary) {
-      return res.status(400).json({ message: "No data provided." });
-    }
-
-    const videoUrl = await videoService.uploadVideo(videoBuffer);
-
-    const video = new PublicVideo({
-      videoTitle: title,
-      videoSummary: summary,
-      videoURL: videoUrl
-
-    });
-
-    await video.save();
+}
 
 
    
