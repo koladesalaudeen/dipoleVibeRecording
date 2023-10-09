@@ -98,7 +98,7 @@ const userRoute= require('./src/routes/userRoute')
 const audioRoute = require('./src/routes/audioRoute');
 const audioService = require('./src/services/audioServices');
 
-const transcriptionQueue = audioService.initializeQueue();
+//const transcriptionQueue = audioService.initializeQueue();
 // app.use('/audio', audioRoute(transcriptionQueue));
 
 

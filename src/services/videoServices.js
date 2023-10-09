@@ -19,13 +19,17 @@ const cloudinaryStorage = new CloudinaryStorage({
 });
 
 
-async function uploadVideo( videoBuffer ) {
+async function uploadVideo( videoBuffer, reqBody ) {
   try {
     const { secure_url } = await cloudinary.uploader.upload(`data:video/mp4;base64,${videoBuffer.toString('base64')}`, {
       resource_type: 'video',
     });
 
-    const video = new PublicVideo({ videoSecureURL: secure_url });
+    const video = new PublicVideo({ 
+      videoTitle: reqBody.title,
+      videoSummary: reqBody.summary,
+      videoURL: secure_url 
+    });
     await video.save();
 
     return secure_url;
@@ -66,20 +70,32 @@ async function fetchVideoById(videoId){
   }
 }
 
-async function fetchAllPublicVideos(){
+async function fetchAllPublicVideos(pageNumber){
   try {
-    const page = parseInt(req.query.page) || 1; // Page number (default to 1)
-    const pageSize = parseInt(req.query.pageSize) || 10; // Number of items per page (default to 10)
+    // const videoList = await PublicVideo.find();
+      console.log(pageNumber);
+      const page = parseInt("1", 10) || 5;
+      const pageSize = parseInt("10", 10) || 20;
+      console.log(pageSize);
 
-    // Calculate the number of documents to skip
-    const skip = (page - 1) * pageSize;
+      const videoList = await PublicVideo.aggregate([
+        {
+          $facet: {
+            metadata: [{ $count: 'totalCount' }],
+            data: [{ $skip: (page - 1) * pageSize }, { $limit: pageSize }],
+          },
+        },
+      ]);
 
-    // Query the database with skip and limit
-    const videoList = await PublicVideo.find()
-      .skip(skip)
-      .limit(pageSize);
+      const response = {
+        success: true,
+        videos: {
+          metadata: { totalCount: videoList[0].metadata[0].totalCount, page, pageSize },
+          data: videoList[0].data,
+        },
+      };
 
-    return videoList;
+    return response;
   } catch (error) {
     throw new Error('Error retrieving videos');
   }

@@ -9,13 +9,14 @@ const publicVideoSchema = new mongoose.Schema({
     },
     userEmail: {
       type: String,
-      required: true,
     },
     videoId: {
       type: String,
-      required: true,
     },
     videoTitle: {
+      type: String,
+    },
+    videoSummary: {
       type: String,
     },
     videoURL:{
