@@ -1,25 +1,28 @@
-const videoService = require('../services/videoServices');
+const videoService = require("../services/videoServices");
+const PublicVideo = require("../models/public-video");
 
-const cloudinary = require('cloudinary').v2;
+const cloudinary = require("cloudinary").v2;
 
 async function uploadVideo(req, res) {
   try {
-    //const videoBuffer = req.file.buffer;
-    const videoBuffer = req.convertedVideo;
-    
-    if (!videoBuffer) {
-      return res.status(400).json({ message: 'No video data provided.' });
+    const videoBuffer = req.file.buffer;
+    const { title, summary } = req.body;
+
+
+    if (!videoBuffer || !title || !summary) {
+      return res.status(400).json({ message: "No data provided." });
     }
 
-    const { title, summary } = req.body; 
+    const videoUrl = await videoService.uploadVideo(videoBuffer);
 
-    const reqBody = {
-      title: title,
-      summary: summary
-    }
+    const video = new PublicVideo({
+      videoTitle: title,
+      videoSummary: summary,
+      videoURL: videoUrl
 
-    const videoUrl = await videoService.uploadVideo(videoBuffer, reqBody);
-    console.log(videoUrl);
+    });
+
+    await video.save();
 
     return res.json({
       message: "Video created successfully",
@@ -27,37 +30,34 @@ async function uploadVideo(req, res) {
     });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Error uploading video.' });
+    return res.status(500).json({ message: "Error uploading video." });
   }
 }
 
-async function fetchAllPublicVideos(req, res){
-  try{
-    const { page } = req.query;
-    
-    const videoList = await videoService.fetchAllPublicVideos(page);
+async function fetchAllPublicVideos(req, res) {
+  try {
+    const videoList = await videoService.fetchAllPublicVideos();
 
     return res.status(200).json(videoList);
-  }
-  catch(error){
-    return res.status(500).json({ message: 'Error retrieving videos'})
+  } catch (error) {
+    return res.status(500).json({ message: "Error retrieving videos" });
   }
 }
 
-async function viewVideoById(req, res){
+async function viewVideoById(req, res) {
   const { videoId } = req.params;
 
   try {
     const video = await videoService.fetchVideoById(videoId);
 
     if (!video) {
-      return res.status(404).json({ message: 'Video not found' });
+      return res.status(404).json({ message: "Video not found" });
     }
 
     res.status(200).json(video);
   } catch (error) {
-    console.error('Error fetching video:', error);
-    return res.status(500).json({ message: 'Error fetching video' });
+    console.error("Error fetching video:", error);
+    return res.status(500).json({ message: "Error fetching video" });
   }
 }
 // Controller function to upload a video
@@ -89,7 +89,9 @@ async function getVideoMetadata(req, res) {
     return res.status(200).json(videoMetadata);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Error retrieving video metadata.' });
+    return res
+      .status(500)
+      .json({ message: "Error retrieving video metadata." });
   }
 }
 
@@ -101,13 +103,15 @@ async function deleteVideo(req, res) {
     const deletionResult = await videoService.deleteVideo(publicId);
 
     if (deletionResult) {
-      return res.status(200).json({ message: 'Video deleted successfully.' });
+      return res.status(200).json({ message: "Video deleted successfully." });
     } else {
-      return res.status(404).json({ message: 'Video not found or could not be deleted.' });
+      return res
+        .status(404)
+        .json({ message: "Video not found or could not be deleted." });
     }
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Error deleting video.' });
+    return res.status(500).json({ message: "Error deleting video." });
   }
 }
 
@@ -116,5 +120,5 @@ module.exports = {
   getVideoMetadata,
   deleteVideo,
   fetchAllPublicVideos,
-  viewVideoById
+  viewVideoById,
 };
