@@ -5,6 +5,24 @@ const cloudinary = require("cloudinary").v2;
 
 async function uploadVideo(req, res) {
   try {
+
+    //const videoBuffer = req.file.buffer;
+    const videoBuffer = req.convertedVideo;
+    
+    if (!videoBuffer) {
+      return res.status(400).json({ message: 'No video data provided.' });
+    }
+
+    const { title, summary } = req.body; 
+
+    const reqBody = {
+      title: title,
+      summary: summary
+    }
+
+    const videoUrl = await videoService.uploadVideo(videoBuffer, reqBody);
+    console.log(videoUrl);
+    
     const videoBuffer = req.file.buffer;
     const { title, summary } = req.body;
 
@@ -24,19 +42,16 @@ async function uploadVideo(req, res) {
 
     await video.save();
 
-    return res.json({
-      message: "Video created successfully",
-      videoUrl: videoUrl,
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Error uploading video." });
-  }
-}
 
-async function fetchAllPublicVideos(req, res) {
-  try {
-    const videoList = await videoService.fetchAllPublicVideos();
+   
+
+
+async function fetchAllPublicVideos(req, res){
+  try{
+    const { page } = req.query;
+    
+    const videoList = await videoService.fetchAllPublicVideos(page);
+
 
     return res.status(200).json(videoList);
   } catch (error) {

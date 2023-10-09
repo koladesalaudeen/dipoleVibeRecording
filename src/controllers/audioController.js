@@ -8,7 +8,8 @@ async function transcribeAudio(req, res) {
 
         const audioBlob  = req.file.buffer;
 
-        const transcriptionResult = await audioService.whisperTranscribe(audioBlob);
+        //const transcriptionResult = await audioService.whisperTranscribe(audioBlob);
+        const transcriptionResult = await audioService.initializeQueue(audioBlob)
 
         if (typeof transcriptionResult !== 'string' || transcriptionResult.trim() === '') {
             return res.status(500).json({ message: "Invalid transcription result. Please check the audio data." });

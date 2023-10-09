@@ -16,7 +16,7 @@ const publicVideoSchema = new mongoose.Schema({
     videoTitle: {
       type: String,
     },
-    videoSummary : {
+    videoSummary: {
       type: String,
     },
     videoURL:{
