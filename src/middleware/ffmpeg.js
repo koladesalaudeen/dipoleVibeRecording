@@ -1,50 +1,3 @@
-// const { spawn } = require('child_process');
-
-// function ffmpegConversionMiddleware(req, res, next) {
-
-//     console.log("Here!!!");
-//   const ffmpegProcess = spawn('ffmpeg', [
-//     '-i', '-',          // Input from stdin
-//     '-c:v', 'libx264',  // Video codec for MP4 (H.264)
-//     '-c:a', 'aac',      // Audio codec for MP4 (AAC)
-//     '-strict', 'experimental',
-//     '-f', 'mp4',        // Output format is MP4
-//     '-movflags', '+faststart', // Enable fast start for streaming
-//     '-preset', 'fast',  // Encoding preset (fast)
-//     '-crf', '23',       // Constant Rate Factor (quality, lower is better, 23 is default)
-//     '-b:a', '128k',     // Audio bitrate (adjust as needed)
-//     '-vf', 'scale=640:-1', // Video scale (adjust width as needed, -1 to maintain aspect ratio)
-//     '-y',               // Overwrite output file if it exists
-//     '-'                 // Output to stdout
-//   ]);
-
-// //   req.pipe(ffmpegProcess.stdin);
-
-// //   const chunks = [];
-
-// //   ffmpegProcess.stdout.on('data', (data) => {
-// //     console.log('FFmpeg data:', data.toString()); // Log FFmpeg data
-// //     chunks.push(data);
-// //   });
-
-//   ffmpegProcess.stderr.on('data', (data) => {
-//     console.error(`FFmpeg error!!: ${data}`);
-//   });
-
-//   ffmpegProcess.on('close', (code) => {
-//     if (code === 0) {
-//       console.log('Conversion completed successfully.');
-//       const convertedVideo = Buffer.concat(chunks);
-//       req.convertedVideo = convertedVideo;
-//       next(); // Continue to the next middleware or route handler
-//     } else {
-//       console.error(`FFmpeg process exited with code ${code}`);
-//       res.status(500).json({ error: 'Video conversion failed.' });
-//     }
-//   });
-// }
-
-// module.exports = ffmpegConversionMiddleware;
 const fs = require('fs');
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
@@ -83,8 +36,41 @@ async function ffmpegConversionMiddleware(req, res, next) {
   } finally {
     // Clean up: remove the temporary file
     fs.unlinkSync(tempFilePath);
+    console.log("temp file removed successfully");
   }
 }
 
+async function extractAndUploadAudio(req, res, next) {
+  const blob = req.file.buffer;
+  const tempFileName = `temp_${Date.now()}.webm`;
+  const tempFilePath = `./${tempFileName}`;
 
-module.exports = ffmpegConversionMiddleware;
+  fs.writeFileSync(tempFilePath, blob);
+
+  try {
+    const outputFileName = tempFileName.replace('.webm', '.flac'); // Change the output format to AAC audio
+    const cmd = `ffmpeg -i "${tempFilePath}" -vn -acodec flac "${outputFileName}"`;
+    const { stdout, stderr } = await exec(cmd);
+
+    console.error('[audio-extract] FFmpeg stderr:', stderr);
+
+    if (fs.existsSync(outputFileName)) {
+      req.extractedAudio = fs.readFileSync(outputFileName);
+      next();
+    } else {
+      console.error('[audio-extract] Audio extraction failed.');
+      return res.status(500).json({ error: 'Audio extraction failed.' });
+    }
+  } catch (err) {
+    console.error('[audio-extract] Error during audio extraction:', err);
+    return res.status(500).json({ error: 'Error during audio extraction.' });
+  } finally {
+    fs.unlinkSync(tempFilePath);
+    console.log('[audio-extract] Temporary file removed successfully');
+  }
+}
+
+module.exports = {
+  ffmpegConversionMiddleware,
+  extractAndUploadAudio,
+ };

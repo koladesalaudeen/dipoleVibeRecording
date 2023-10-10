@@ -22,6 +22,9 @@ const publicVideoSchema = new mongoose.Schema({
     videoURL:{
       type: String,
     },
+    transcription:{
+      type: String,
+    },
     description: {
       type: String,
     },
@@ -30,6 +33,7 @@ const publicVideoSchema = new mongoose.Schema({
     },
     views: {
         type: Number,
+        default: 0,
       },
     uploadedAt: {
       type: Date,
