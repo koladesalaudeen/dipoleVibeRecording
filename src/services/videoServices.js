@@ -1,6 +1,12 @@
+const fs = require('fs');
+const util = require('util');
+const writeFileAsync = util.promisify(fs.writeFile);
+const createReadStream = fs.createReadStream;
+const OpenAI = require('openai');
 const PublicVideo = require('../models/public-video')
 const cloudinary =require('cloudinary').v2; 
 const { CloudinaryStorage } =require('multer-storage-cloudinary');
+//const { io } = require('../../index');
 
 
 cloudinary.config({
@@ -18,24 +24,74 @@ const cloudinaryStorage = new CloudinaryStorage({
   },
 });
 
+const OpenAIAPIKey = process.env.OPENAI_API_KEY;
+const openai = new OpenAI({
+  apiKey: OpenAIAPIKey
+});
 
-async function uploadVideo( videoBuffer, reqBody ) {
+
+async function uploadVideo( videoBuffer ) {
   try {
-    const { secure_url } = await cloudinary.uploader.upload(`data:video/mp4;base64,${videoBuffer.toString('base64')}`, {
+    const {secure_url}  = await cloudinary.uploader.upload(`data:video/mp4;base64,${videoBuffer.toString('base64')}`, {
       resource_type: 'video',
     });
 
-    const video = new PublicVideo({ 
-      videoTitle: reqBody.title,
-      videoSummary: reqBody.summary,
-      videoURL: secure_url 
-    });
-    await video.save();
-
     return secure_url;
+
   } catch (error) {
     throw new Error('Error uploading video to Cloudinary: ' + error.message );
   }
+}
+
+async function transcribeAudio (audioBuffer){
+  try {
+    const tempFilePath = 'audio.m4a';
+
+    await writeFileAsync(tempFilePath, audioBuffer);
+
+    const audioStream = createReadStream(tempFilePath);
+
+    transcriptionResult = await openai.audio.transcriptions.create({
+      file: audioStream,
+      model: "whisper-1",
+    });
+
+    fs.unlinkSync(tempFilePath);
+    return transcriptionResult.text;
+  } catch (error) {
+    console.error('Error transcribing audio:', error);
+    throw error;
+  }
+}
+
+async function saveVideoAndTranscription(videoBuffer, audioBuffer, reqBody){
+  try{
+    const audioTranscription = await transcribeAudio(audioBuffer);
+    const videoUrl = await uploadVideo(videoBuffer);
+  
+    const video = new PublicVideo({ 
+      videoTitle: reqBody.title,
+      videoSummary: reqBody.summary,
+      videoURL: videoUrl,
+      transcription:  audioTranscription
+    });
+    await video.save();
+
+    const videoObj = { 
+      videoTitle: reqBody.title,
+      videoSummary: reqBody.summary,
+      videoURL: videoUrl,
+      transcription:  audioTranscription
+    };
+  
+    return ({
+      message: "video upload and transciption successful",
+      videoObj: videoObj
+  });
+  }catch(error) {
+  console.error('error:', error);
+  throw error;
+}
 }
 
 async function getVideoMetadata(publicUrl) {
@@ -72,11 +128,8 @@ async function fetchVideoById(videoId){
 
 async function fetchAllPublicVideos(pageNumber){
   try {
-    // const videoList = await PublicVideo.find();
-      console.log(pageNumber);
-      const page = parseInt("1", 10) || 5;
+      const page = parseInt(pageNumber, 10) || 5;
       const pageSize = parseInt("10", 10) || 20;
-      console.log(pageSize);
 
       const videoList = await PublicVideo.aggregate([
         {
@@ -101,11 +154,55 @@ async function fetchAllPublicVideos(pageNumber){
   }
 }
 
+async function searchVideosByDate(query) {
+  try {
+    // Parse the query date string into a JavaScript Date object
+    const date = new Date(query);
+
+    if (isNaN(date.getTime())) {
+      return []; // Invalid date format, return an empty array
+    }
+
+    // Search for videos uploaded on the specified date
+    const videos = await PublicVideo.find({
+      uploadedAt: {
+        $gte: date, // Greater than or equal to the specified date
+        $lt: new Date(date.getTime() + 24 * 60 * 60 * 1000), // Less than the next day
+      },
+    });
+    return videos;
+  } catch (error) {
+    console.error("Error searching videos by date:", error);
+    throw error; // You can throw the error to handle it in the caller function
+  }
+}
+
+async function increaseViewCount(videoId) {
+  try {
+    // Find the video by its ID and update the view count
+    const video = await PublicVideo.findById(videoId);
+    if (!video) {
+      throw new Error('Video not found');
+    }
+
+    video.views += 1;
+    await video.save();
+
+    // Emit a real-time update to all users with the new view count
+    io.emit('updateViewCount', { videoId, views: video.views });
+  } catch (error) {
+    console.error('Error increasing view count:', error);
+    throw error;
+  }
+}
+
 module.exports = {
-  uploadVideo,
   getVideoMetadata,
   deleteVideo,
   fetchAllPublicVideos,
   fetchVideoById,
+  saveVideoAndTranscription,
+  searchVideosByDate,
+  increaseViewCount,
   cloudinaryStorage
 };

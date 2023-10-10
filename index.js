@@ -79,16 +79,19 @@
 
 // module.exports = storage;
 require('dotenv').config();
-
 const express = require('express');
+const http = require('http'); // Import http module
+const socketIo = require('socket.io'); // Import socket.io
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-const {Storage} = require('@google-cloud/storage');
+const { Storage } = require('@google-cloud/storage');
 
 const app = express();
-app.use(express.json( { limit: '25mb'} ));
+const server = http.createServer(app); // Create an HTTP server using app
+app.use(express.json({ limit: '25mb' }));
 app.use(express.urlencoded({ extended: true }));
 const cors = require('cors');
+const io = socketIo(server);
 
 const storage = new Storage();
 
@@ -157,9 +160,26 @@ app.use('/audio', audioRoute);
 app.use('/comments', commentRoutes);
 app.use('/user', userRoute)
 
+io.on('connection', (socket) => {
+  console.log('A user connected');
 
-const server = app.listen(3001, () => {
+  // Listen for updates from clients
+  socket.on('updateViewCount', ({ cardId, views }) => {
+    // Broadcast the update to all connected clients
+    io.emit('updateViewCount', { cardId, views });
+  });
+
+  socket.on('disconnect', () => {
+    console.log('A user disconnected');
+  });
+});
+
+
+server.listen(3001, () => {
   console.log('Server is running on port 3001');
 });
 
-module.exports = storage;
+module.exports = {
+  storage,
+  io,
+};

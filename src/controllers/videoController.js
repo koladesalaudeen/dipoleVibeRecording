@@ -5,9 +5,8 @@ const cloudinary = require("cloudinary").v2;
 
 async function uploadVideo(req, res) {
   try {
-
-    //const videoBuffer = req.file.buffer;
     const videoBuffer = req.convertedVideo;
+    const audioBuffer = req.extractedAudio;
     
     if (!videoBuffer) {
       return res.status(400).json({ message: 'No video data provided.' });
@@ -20,31 +19,14 @@ async function uploadVideo(req, res) {
       summary: summary
     }
 
-    const videoUrl = await videoService.uploadVideo(videoBuffer, reqBody);
-    console.log(videoUrl);
-    
-    const videoBuffer = req.file.buffer;
-    const { title, summary } = req.body;
-
-
-    if (!videoBuffer || !title || !summary) {
-      return res.status(400).json({ message: "No data provided." });
-    }
-
-    const videoUrl = await videoService.uploadVideo(videoBuffer);
-
-    const video = new PublicVideo({
-      videoTitle: title,
-      videoSummary: summary,
-      videoURL: videoUrl
-
-    });
-
-    await video.save();
-
-
-   
-
+    const message = await videoService.saveVideoAndTranscription(videoBuffer,audioBuffer, reqBody);
+    res.status(200).json({message: message});
+  }
+  catch(error){
+      console.error(error);
+      return res.status(500).json({ message: 'Error uploading video.' });
+  }
+}
 
 async function fetchAllPublicVideos(req, res){
   try{
@@ -75,25 +57,6 @@ async function viewVideoById(req, res) {
     return res.status(500).json({ message: "Error fetching video" });
   }
 }
-// Controller function to upload a video
-// async function uploadVideo(req, res) {
-//   try {
-//     const videoBuffer = req.file.buffer;
-//     console.log(video)
-//     // if (!videoBuffer) {
-//     //   return res.status(400).json({ message: 'No video file uploaded.' });
-//     // }
-
-//     const videoUrl = await videoService.uploadVideo(videoBuffer);
-
-//     return res.status(201).json({ videoUrl });
-//   } catch (error) {
-//     console.error(error);
-//     return res.status(500).json({ message: 'Error uploading video.' });
-//   }
-// }
-
-// Controller function to retrieve video metadata by public URL
 
 async function getVideoMetadata(req, res) {
   try {
@@ -130,10 +93,50 @@ async function deleteVideo(req, res) {
   }
 }
 
+async function searchVideosByDate(req, res) {
+  try {
+    const { date } = req.query;
+    
+    if (!date) {
+      return res.status(400).json({ message: "Date parameter is missing." });
+    }
+
+    const videos = await videoService.searchVideosByDate(date);
+
+    if (videos.length === 0) {
+      return res.status(404).json({ message: "No videos found for the selected date." });
+    }
+    
+    return res.status(200).json(videos);
+  } catch (error) {
+    console.error("Error searching videos by date:", error);
+    return res.status(500).json({ message: "Error searching videos." });
+  }
+}
+
+async function increaseViewCount(req, res) {
+  try {
+    const { videoId } = req.query;
+    console.log(videoId);
+
+    const video = await videoService.increaseViewCount(videoId);
+
+    // Emit a real-time update to all users with the new view count
+    //io.emit('updateViewCount', { videoId, views: video.views });
+
+    return res.status(200).json({ message: 'View count updated successfully' });
+  } catch (error) {
+    //console.error('Error increasing view count:', error);
+    return res.status(500).json({ message: 'Error increasing view count' });
+  }
+}
+
 module.exports = {
   uploadVideo,
   getVideoMetadata,
   deleteVideo,
   fetchAllPublicVideos,
   viewVideoById,
+  searchVideosByDate,
+  increaseViewCount
 };
