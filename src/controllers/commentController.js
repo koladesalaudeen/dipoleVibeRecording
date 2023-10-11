@@ -17,6 +17,8 @@ async function createComment(req, res) {
   }
 }
 
+// getAllComment
+
 async function getCommentsByVideo(req, res) {
   try {
     const videoId = req.params.videoId;

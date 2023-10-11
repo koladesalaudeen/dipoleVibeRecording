@@ -6,11 +6,17 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  videos: [
+  videoPrivate: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'PrivateVideo',
     },
+  ],
+  videoPublic: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'PublicVideo',
+    }
   ],
   shared: {
     type: mongoose.Schema.Types.ObjectId,
