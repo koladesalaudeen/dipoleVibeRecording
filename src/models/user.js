@@ -6,13 +6,19 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  video: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Video', 
-  },
+  videos: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'PrivateVideo',
+    },
+  ],
   shared: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Shared', 
+  },  
+  isPaidUser: {
+    type: Boolean,
+    default: false,
   },
   timestamp: {
     type: Date,
