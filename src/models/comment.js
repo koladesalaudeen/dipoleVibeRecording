@@ -10,6 +10,10 @@ const commentSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  authorPaid: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User', // Reference to the User model for paid users
+  },
   privateVideo: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'private-video', 
