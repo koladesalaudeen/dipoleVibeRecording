@@ -5,7 +5,7 @@ const publicVideoSchema = new mongoose.Schema({
     // Reference to the Comment model (foreign key)
     comment: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Comment',
+      ref: 'PublicComment',
     },
     userEmail: {
       type: String,
