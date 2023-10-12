@@ -177,6 +177,23 @@ async function searchVideosByDate(query) {
   }
 }
 
+async function searchVideosByTitle(query) {
+  try {
+    // Create a regex pattern for the title query to perform a case-insensitive search
+    const titlePattern = new RegExp(query, 'i');
+
+    // Search for videos with titles matching the title query
+    const videos = await PublicVideo.find({
+      videoTitle: titlePattern, // Title matching the title query
+    });
+    
+    return videos;
+  } catch (error) {
+    console.error("Error searching videos by title:", error);
+    throw error; // You can throw the error to handle it in the caller function
+  }
+}
+
 async function increaseViewCount(videoId) {
   try {
     // Find the video by its ID and update the view count
@@ -188,8 +205,6 @@ async function increaseViewCount(videoId) {
     video.views += 1;
     await video.save();
 
-    // Emit a real-time update to all users with the new view count
-    io.emit('updateViewCount', { videoId, views: video.views });
   } catch (error) {
     console.error('Error increasing view count:', error);
     throw error;
@@ -204,5 +219,6 @@ module.exports = {
   saveVideoAndTranscription,
   searchVideosByDate,
   increaseViewCount,
+  searchVideosByTitle,
   cloudinaryStorage
 };
