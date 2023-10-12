@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 // Define the Comment schema
-const commentSchema = new mongoose.Schema({
+const privateCommentSchema = new mongoose.Schema({
   text: {
     type: String,
     required: true,
@@ -10,6 +10,10 @@ const commentSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+},
   authorPaid: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User', // Reference to the User model for paid users
@@ -19,11 +23,6 @@ const commentSchema = new mongoose.Schema({
     ref: 'private-video', 
     required: true,
   },
-  publicVideo: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'public-video', 
-    required: true,
-  },
   timestamp: {
     type: Date,
     default: Date.now,
@@ -31,4 +30,4 @@ const commentSchema = new mongoose.Schema({
 });
 
 // Create and export the Comment model
-module.exports = mongoose.model('Comment', commentSchema);
+module.exports = mongoose.model('PrivateComment', privateCommentSchema);
