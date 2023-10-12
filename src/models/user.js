@@ -6,6 +6,10 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  name : {
+    type: String,
+    required: true,
+  },
   videoPrivate: [
     {
       type: mongoose.Schema.Types.ObjectId,

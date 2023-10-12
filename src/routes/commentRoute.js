@@ -2,14 +2,22 @@
 
 const express = require('express');
 const router = express.Router();
-const commentController = require('../controllers/commentController');
-
+const getPrivateComment = require('../controllers/privateCommentController').getPrivateComment;
+const postPrivateComment = require('../controllers/privateCommentController').privateCreateComment;
+const getPublicComment = require('../controllers/publicCommentController').getPublicComment;
+const postPublicComment = require('../controllers/publicCommentController').publicCreateComment;
 // Create a comment
-router.post('/', commentController.createComment);
 
-// Get comments for a specific video
-router.get('/video/:videoId', commentController.getCommentsByVideo);
+// Get comments for a specific private video
+router.get('/private-video/:videoId', getPrivateComment);
 
-// Add more comment-related routes as needed
+// Create Comments for private videos
+router.post('/private-video/:videoId', postPrivateComment);
+
+// Get public comments
+router.get('/public-video/:videoId', getPublicComment);
+
+// Create Comments for private videos
+router.post('/public-video/:videoId', postPublicComment);
 
 module.exports = router;
