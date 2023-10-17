@@ -64,37 +64,34 @@ async function transcribeAudio (audioBuffer){
   }
 }
 
-async function saveVideoAndTranscription(videoBuffer, audioBuffer, reqBody){
-  try{
-    const audioTranscription = await transcribeAudio(audioBuffer);
-    const videoUrl = await uploadVideo(videoBuffer);
-  
-    const video = new PublicVideo({ 
-      videoTitle: reqBody.title,
-      videoSummary: reqBody.summary,
-      tags : reqBody.tags,
-      videoURL: videoUrl,
-      transcription:  audioTranscription
-    });
-    await video.save();
+async function saveVideoAndTranscription(videoBuffer, audioBuffer, reqBody) {
+  try {
+      const audioTranscription = await transcribeAudio(audioBuffer);
+      const videoUrl = await uploadVideo(videoBuffer);
 
-    const videoObj = { 
-      videoTitle: reqBody.title,
-      videoSummary: reqBody.summary,
-      tags : reqBody.tags,
-      videoURL: videoUrl,
-      transcription:  audioTranscription
-    };
-  
-    return ({
-      message: "video upload and transciption successful",
-      videoObj: videoObj
-  });
-  }catch(error) {
-  console.error('error:', error);
-  throw error;
+      const videoData = {
+          videoTitle: reqBody.title,
+          videoSummary: reqBody.summary,
+          tags: reqBody.tags,
+          videoURL: videoUrl,
+          transcription: audioTranscription
+      };
+
+      const VideoModel = reqBody.isPublic ? PublicVideo : PrivateVideo;
+
+      const video = new VideoModel(videoData);
+      await video.save();
+
+      return {
+          message: "Video upload and transcription successful",
+          videoObj: videoData
+      };
+  } catch (error) {
+      console.error('Error:', error);
+      throw error;
+  }
 }
-}
+
 
 async function getVideoMetadata(publicUrl) {
   try {

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const {ffmpegConversionMiddleware, extractAndUploadAudio} = require('../middleware/ffmpeg');
+const { getRecommendedVideos } = require('../controllers/recommendationController');
 const uploadVideo = require('../controllers/videoController').uploadVideo;
 const getVideoMetadata = require('../controllers/videoController').getVideoMetadata;
 const deleteVideo = require('../controllers/videoController').deleteVideo;
@@ -26,6 +27,8 @@ router.get('/fetch/public', fetchAllPublicVideos);
 router.get('/view/:videoId', viewVideoById);
 router.get("/search", searchVideosByDate);
 router.delete('/delete', deleteVideo);
+
+router.get('/recommended', getRecommendedVideos)
 
 module.exports = router;
 

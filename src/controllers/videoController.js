@@ -12,12 +12,23 @@ async function uploadVideo(req, res) {
       return res.status(400).json({ message: 'No video data provided.' });
     }
 
-    const { title, summary, tags } = req.body; 
+    const { title, summary, tags, public, private } = req.body; 
+
+    if (public && private) {
+      return res.status(400).json({ message: 'Please specify either public or private, not both.' });
+  }
+
+  let isPublic = true; // Assume public by default
+  if (private) {
+      isPublic = false;
+  }
+
 
     const reqBody = {
       title: title,
       summary: summary,
-      tags : tags
+      tags : tags,
+      isPublic: isPublic
     }
 
     const message = await videoService.saveVideoAndTranscription(videoBuffer,audioBuffer, reqBody);
