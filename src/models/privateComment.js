@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const replySchema = require('./replyObject').reply
 
 // Define the Comment schema
 const privateCommentSchema = new mongoose.Schema({
@@ -27,6 +28,7 @@ const privateCommentSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  replies : [replySchema]
 });
 
 // Create and export the Comment model

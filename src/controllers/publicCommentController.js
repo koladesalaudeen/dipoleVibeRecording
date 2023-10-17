@@ -39,6 +39,7 @@ async function publicCreateComment(req, res) {
         authorPaid,
         publicVideo: videoId,
         timestamp: new Date(),
+        replies: []
       });
   
       const savedComment = await newComment.save();

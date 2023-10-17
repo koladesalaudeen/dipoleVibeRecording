@@ -72,6 +72,7 @@ async function saveVideoAndTranscription(videoBuffer, audioBuffer, reqBody){
     const video = new PublicVideo({ 
       videoTitle: reqBody.title,
       videoSummary: reqBody.summary,
+      tags : reqBody.tags,
       videoURL: videoUrl,
       transcription:  audioTranscription
     });
@@ -80,6 +81,7 @@ async function saveVideoAndTranscription(videoBuffer, audioBuffer, reqBody){
     const videoObj = { 
       videoTitle: reqBody.title,
       videoSummary: reqBody.summary,
+      tags : reqBody.tags,
       videoURL: videoUrl,
       transcription:  audioTranscription
     };
