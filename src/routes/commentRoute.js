@@ -10,6 +10,7 @@ const getPublicComment = require('../controllers/publicCommentController').getPu
 const postPublicComment = require('../controllers/publicCommentController').publicCreateComment;
 const updatePublicComment = require('../controllers/publicCommentController').updatePublicComment;
 const deletePublicComment = require('../controllers/publicCommentController').deletePublicComment;
+const createReply = require('../controllers/replyController').createReply;
 // Create a comment
 
 // Get comments for a specific private video
@@ -35,5 +36,8 @@ router.put('/update-private-comment', updatePrivateComment)
 
 // delete private comment
 router.delete('/delete-private-comment', deletePrivateComment)
+
+// reply routes
+router.post('/reply', createReply);
 
 module.exports = router;

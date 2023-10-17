@@ -100,6 +100,7 @@ const commentRoutes = require('./src/routes/commentRoute');
 const userRoute= require('./src/routes/userRoute')
 const audioRoute = require('./src/routes/audioRoute');
 const audioService = require('./src/services/audioServices');
+const replyRoute = require('./src/routes/replyRoute');
 
 //const transcriptionQueue = audioService.initializeQueue();
 // app.use('/audio', audioRoute(transcriptionQueue));
@@ -159,6 +160,7 @@ app.use('/videos', videoRoutes);
 app.use('/audio', audioRoute);
 app.use('/comments', commentRoutes);
 app.use('/user', userRoute)
+app.use('/reply', replyRoute)
 
 io.on('connection', (socket) => {
   console.log('A user connected');
