@@ -1,47 +1,51 @@
 const mongoose = require('mongoose');
 
-
 const publicVideoSchema = new mongoose.Schema({
-    // Reference to the Comment model (foreign key)
     comment: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'PublicComment',
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'PublicComment',
     },
     userEmail: {
-      type: String,
+        type: String,
     },
     videoId: {
-      type: String,
+        type: String,
     },
     videoTitle: {
-      type: String,
+        type: String,
     },
     videoSummary : {
-      type: String,
+        type: String,
     },
     videoURL:{
-      type: String,
+        type: String,
     },
     transcription:{
-      type: String,
+        type: String,
     },
     description: {
-      type: String,
+        type: String,
     },
     likes:{
-      type: Map
+        type: Map
     },
     views: {
         type: Number,
         default: 0,
-      },
+    },
     uploadedAt: {
-      type: Date,
-      default: Date.now,
+        type: Date,
+        default: Date.now,
     },
     tags: {
-      type: [String],
+        type: [String], // Array of strings
+        validate: {
+            validator: function(tags) {
+                return tags.length >= 1 && tags.length <= 3; // Allow 1 to 3 tags
+            },
+            message: 'You can add between 1 and 3 tags.'
+        }
     },
-  });
+});
 
-  module.exports = mongoose.model('PublicVideo', publicVideoSchema);
+module.exports = mongoose.model('PublicVideo', publicVideoSchema);
