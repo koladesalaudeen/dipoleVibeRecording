@@ -25,6 +25,7 @@ async function uploadVideo(req, res) {
 
 
     const reqBody = {
+      tag: tag,
       title: title,
       summary: summary,
       tags : tags,
@@ -126,15 +127,32 @@ async function searchVideosByDate(req, res) {
   }
 }
 
+async function searchVideosByTitle(req, res) {
+  try {
+    const { search } = req.query;
+    
+    if (!search) {
+      return res.status(400).json({ message: "Parameter is missing." });
+    }
+
+    const videos = await videoService.searchVideosByTitle(search);
+
+    if (videos.length === 0) {
+      return res.status(404).json({ message: "No videos found ." });
+    }
+    
+    return res.status(200).json(videos);
+  } catch (error) {
+    console.error("Error searching videos with title:", error);
+    return res.status(500).json({ message: "Error searching videos." });
+  }
+}
+
 async function increaseViewCount(req, res) {
   try {
     const { videoId } = req.query;
-    console.log(videoId);
 
     const video = await videoService.increaseViewCount(videoId);
-
-    // Emit a real-time update to all users with the new view count
-    //io.emit('updateViewCount', { videoId, views: video.views });
 
     return res.status(200).json({ message: 'View count updated successfully' });
   } catch (error) {
@@ -150,5 +168,6 @@ module.exports = {
   fetchAllPublicVideos,
   viewVideoById,
   searchVideosByDate,
-  increaseViewCount
+  increaseViewCount,
+  searchVideosByTitle
 };
