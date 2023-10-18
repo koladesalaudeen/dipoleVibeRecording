@@ -12,9 +12,10 @@ async function uploadVideo(req, res) {
       return res.status(400).json({ message: 'No video data provided.' });
     }
 
-    const { title, summary } = req.body; 
+    const { tag, title, summary } = req.body; 
 
     const reqBody = {
+      tag: tag,
       title: title,
       summary: summary
     }

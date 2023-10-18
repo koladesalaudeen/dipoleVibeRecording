@@ -39,6 +39,9 @@ const publicVideoSchema = new mongoose.Schema({
       type: Date,
       default: Date.now,
     },
+    tags: {
+      type: [String],
+    },
   });
 
   module.exports = mongoose.model('PublicVideo', publicVideoSchema);

@@ -6,6 +6,7 @@ const OpenAI = require('openai');
 const PublicVideo = require('../models/public-video')
 const cloudinary =require('cloudinary').v2; 
 const { CloudinaryStorage } =require('multer-storage-cloudinary');
+const PublicComment = require('../models/privateComment');
 //const { io } = require('../../index');
 
 
@@ -70,6 +71,7 @@ async function saveVideoAndTranscription(videoBuffer, audioBuffer, reqBody){
     const videoUrl = await uploadVideo(videoBuffer);
   
     const video = new PublicVideo({ 
+      videoTags: reqBody.tag,
       videoTitle: reqBody.title,
       videoSummary: reqBody.summary,
       videoURL: videoUrl,
@@ -78,6 +80,7 @@ async function saveVideoAndTranscription(videoBuffer, audioBuffer, reqBody){
     await video.save();
 
     const videoObj = { 
+      videoTags: reqBody.tag,
       videoTitle: reqBody.title,
       videoSummary: reqBody.summary,
       videoURL: videoUrl,

@@ -15,7 +15,7 @@ async function publicCreateComment(req, res) {
       const videoExists = await PublicVideo.exists({ _id: videoId });
   
       if (!videoExists) {
-          return res.status(404).json({ error: 'Private video not found.' });
+          return res.status(404).json({ error: 'Public video not found.' });
       }
   
       let user;
@@ -55,9 +55,6 @@ async function publicCreateComment(req, res) {
       return res.status(500).json({ message: 'Error creating comment.' });
     }
   }
-  
-  
-  
   
   async function getPublicComment(req, res) {
     try {
