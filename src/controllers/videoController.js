@@ -7,46 +7,61 @@ async function uploadVideo(req, res) {
   try {
     const videoBuffer = req.convertedVideo;
     const audioBuffer = req.extractedAudio;
-    
+
     if (!videoBuffer) {
-      return res.status(400).json({ message: 'No video data provided.' });
+      return res.status(400).json({ message: "No video data provided." });
     }
 
-    const { title, summary, tags, public, private } = req.body; 
+    const { title, summary, tags, public, private } = req.body;
 
     if (public && private) {
-      return res.status(400).json({ message: 'Please specify either public or private, not both.' });
-  }
+      return res.status(400).json({
+        message: "Please specify either public or private, not both.",
+      });
+    }
 
-  let isPublic = true; // Assume public by default
-  if (private) {
+    let isPublic = true; // Assume public by default
+    if (private) {
       isPublic = false;
-  }
-
+    }
 
     const reqBody = {
       tag: tag,
       title: title,
       summary: summary,
-      tags : tags,
-      isPublic: isPublic
-    }
+      tags: tags,
+      isPublic: isPublic,
+    };
 
-    const message = await videoService.saveVideoAndTranscription(videoBuffer,audioBuffer, reqBody);
-    res.status(200).json({message: message});
-  }
-  catch(error){
-      console.error(error);
-      return res.status(500).json({ message: 'Error uploading video.' });
+    const message = await videoService.saveVideoAndTranscription(
+      videoBuffer,
+      audioBuffer,
+      reqBody
+    );
+    res.status(200).json({ message: message });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Error uploading video." });
   }
 }
 
-async function fetchAllPublicVideos(req, res){
-  try{
+async function fetchAllPublicVideos(req, res) {
+  try {
     const { page } = req.query;
-    
+
     const videoList = await videoService.fetchAllPublicVideos(page);
 
+    return res.status(200).json(videoList);
+  } catch (error) {
+    return res.status(500).json({ message: "Error retrieving videos" });
+  }
+}
+
+async function fetchAllPrivateVideos(req, res) {
+  try {
+    const { page, userId } = req.query;
+
+    const videoList = await videoService.fetchAllPrivateVideos(page, userId);
 
     return res.status(200).json(videoList);
   } catch (error) {
@@ -109,7 +124,7 @@ async function deleteVideo(req, res) {
 async function searchVideosByDate(req, res) {
   try {
     const { date } = req.query;
-    
+
     if (!date) {
       return res.status(400).json({ message: "Date parameter is missing." });
     }
@@ -117,9 +132,11 @@ async function searchVideosByDate(req, res) {
     const videos = await videoService.searchVideosByDate(date);
 
     if (videos.length === 0) {
-      return res.status(404).json({ message: "No videos found for the selected date." });
+      return res
+        .status(404)
+        .json({ message: "No videos found for the selected date." });
     }
-    
+
     return res.status(200).json(videos);
   } catch (error) {
     console.error("Error searching videos by date:", error);
@@ -130,7 +147,7 @@ async function searchVideosByDate(req, res) {
 async function searchVideosByTitle(req, res) {
   try {
     const { search } = req.query;
-    
+
     if (!search) {
       return res.status(400).json({ message: "Parameter is missing." });
     }
@@ -140,7 +157,7 @@ async function searchVideosByTitle(req, res) {
     if (videos.length === 0) {
       return res.status(404).json({ message: "No videos found ." });
     }
-    
+
     return res.status(200).json(videos);
   } catch (error) {
     console.error("Error searching videos with title:", error);
@@ -154,10 +171,10 @@ async function increaseViewCount(req, res) {
 
     const video = await videoService.increaseViewCount(videoId);
 
-    return res.status(200).json({ message: 'View count updated successfully' });
+    return res.status(200).json({ message: "View count updated successfully" });
   } catch (error) {
     //console.error('Error increasing view count:', error);
-    return res.status(500).json({ message: 'Error increasing view count' });
+    return res.status(500).json({ message: "Error increasing view count" });
   }
 }
 
@@ -169,5 +186,6 @@ module.exports = {
   viewVideoById,
   searchVideosByDate,
   increaseViewCount,
-  searchVideosByTitle
+  searchVideosByTitle,
+  fetchAllPrivateVideos,
 };
