@@ -26,7 +26,6 @@ async function uploadVideo(req, res) {
     }
 
     const reqBody = {
-      tag: tag,
       title: title,
       summary: summary,
       tags: tags,

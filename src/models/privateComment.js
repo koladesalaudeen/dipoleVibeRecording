@@ -18,7 +18,7 @@ const privateCommentSchema = new mongoose.Schema(
     },
     authorPaid: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // Reference to the User model for paid users
+      ref: "User",
     },
     privateVideo: {
       type: mongoose.Schema.Types.ObjectId,

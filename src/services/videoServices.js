@@ -68,7 +68,7 @@ async function transcribeAudio(audioBuffer) {
 
 async function saveVideoAndTranscription(videoBuffer, audioBuffer, reqBody) {
   try {
-    const audioTranscription = await transcribeAudio(audioBuffer);
+    // const audioTranscription = await transcribeAudio(audioBuffer);
     const videoUrl = await uploadVideo(videoBuffer);
 
     const videoData = {
@@ -76,7 +76,7 @@ async function saveVideoAndTranscription(videoBuffer, audioBuffer, reqBody) {
       videoSummary: reqBody.summary,
       tags: reqBody.tags,
       videoURL: videoUrl,
-      transcription: audioTranscription,
+      // transcription: audioTranscription,
     };
 
     const VideoModel = reqBody.isPublic ? PublicVideo : PrivateVideo;
