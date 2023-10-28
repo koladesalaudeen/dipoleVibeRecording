@@ -8,6 +8,7 @@ const {
 const {
   getRecommendedVideos,
 } = require("../controllers/recommendationController");
+const { searchVideos } = require("../controllers/videoController");
 const uploadVideo = require("../controllers/videoController").uploadVideo;
 const getVideoMetadata =
   require("../controllers/videoController").getVideoMetadata;
@@ -17,8 +18,6 @@ const fetchAllPublicVideos =
   require("../controllers/videoController").fetchAllPublicVideos;
 const fetchAllPrivateVideos =
   require("../controllers/videoController").fetchAllPrivateVideos;
-const searchVideosByTitle =
-  require("../controllers/videoController").searchVideosByTitle;
 const increaseViewCount =
   require("../controllers/videoController").increaseViewCount;
 const cloudinaryStorage =
@@ -44,7 +43,7 @@ router.get("/metadata", getVideoMetadata);
 router.get("/fetch/public", fetchAllPublicVideos);
 router.get("/fetch/private", fetchAllPrivateVideos);
 router.get("/view/:videoId", viewVideoById);
-router.get("/search", searchVideosByTitle);
+router.get("/search", searchVideos);
 router.delete("/delete", deleteVideo);
 
 module.exports = router;

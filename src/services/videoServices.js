@@ -6,6 +6,7 @@ const OpenAI = require("openai");
 const PublicVideo = require("../models/public-video");
 const PrivateVideo = require("../models/private-video");
 const cloudinary = require("cloudinary").v2;
+const moment = require("moment");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const PublicComment = require("../models/privateComment");
 //const { io } = require('../../index');
@@ -141,6 +142,10 @@ async function fetchAllPublicVideos(pageNumber) {
       },
     ]);
 
+    const videos = await PublicVideo.populate(videoList[0].data, {
+      path: "comment",
+    });
+
     const response = {
       success: true,
       videos: {
@@ -149,7 +154,7 @@ async function fetchAllPublicVideos(pageNumber) {
           page,
           pageSize,
         },
-        data: videoList[0].data,
+        data: videos,
       },
     };
 
@@ -196,45 +201,23 @@ async function fetchAllPrivateVideos(pageNumber, userId) {
   }
 }
 
-async function searchVideosByDate(query) {
+async function searchVideos(search) {
   try {
-    // Parse the query date string into a JavaScript Date object
-    const date = new Date(query);
-
-    if (isNaN(date.getTime())) {
-      return []; // Invalid date format, return an empty array
-    }
-
-    // Search for videos uploaded on the specified date
     const videos = await PublicVideo.find({
-      uploadedAt: {
-        $gte: date, // Greater than or equal to the specified date
-        $lt: new Date(date.getTime() + 24 * 60 * 60 * 1000), // Less than the next day
-      },
-    });
-    return videos;
-  } catch (error) {
-    console.error("Error searching videos by date:", error);
-    throw error; // You can throw the error to handle it in the caller function
-  }
-}
-
-async function searchVideosByTitle(query) {
-  try {
-    // Create a regex pattern for the title query to perform a case-insensitive search
-    const titlePattern = new RegExp(query, "i");
-
-    // Search for videos with titles matching the title query
-    const videos = await PublicVideo.find({
-      videoTitle: titlePattern, // Title matching the title query
-    });
+      $or: [
+        { videoTitle: { $regex: search, $options: "i" } },
+        { tags: { $in: [search] } },
+        { videoSummary: { $regex: search, $options: "i" } },
+      ],
+    }).populate("comment");
 
     return videos;
   } catch (error) {
-    console.error("Error searching videos by title:", error);
-    throw error; // You can throw the error to handle it in the caller function
+    throw new Error("Error searching videos.");
   }
 }
+
+// Search by Date
 
 async function increaseViewCount(videoId) {
   try {
@@ -258,9 +241,8 @@ module.exports = {
   fetchAllPublicVideos,
   fetchVideoById,
   saveVideoAndTranscription,
-  searchVideosByDate,
+  searchVideos,
   increaseViewCount,
-  searchVideosByTitle,
   cloudinaryStorage,
   fetchAllPrivateVideos,
 };

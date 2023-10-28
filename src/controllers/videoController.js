@@ -121,30 +121,8 @@ async function deleteVideo(req, res) {
   }
 }
 
-async function searchVideosByDate(req, res) {
-  try {
-    const { date } = req.query;
-
-    if (!date) {
-      return res.status(400).json({ message: "Date parameter is missing." });
-    }
-
-    const videos = await videoService.searchVideosByDate(date);
-
-    if (videos.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No videos found for the selected date." });
-    }
-
-    return res.status(200).json(videos);
-  } catch (error) {
-    console.error("Error searching videos by date:", error);
-    return res.status(500).json({ message: "Error searching videos." });
-  }
-}
-
-async function searchVideosByTitle(req, res) {
+// Search videos by tags, title, summary and time
+async function searchVideos(req, res) {
   try {
     const { search } = req.query;
 
@@ -152,15 +130,15 @@ async function searchVideosByTitle(req, res) {
       return res.status(400).json({ message: "Parameter is missing." });
     }
 
-    const videos = await videoService.searchVideosByTitle(search);
+    const videos = await videoService.searchVideos(search);
 
     if (videos.length === 0) {
-      return res.status(404).json({ message: "No videos found ." });
+      return res.status(404).json({ message: "No videos found." });
     }
 
     return res.status(200).json(videos);
   } catch (error) {
-    console.error("Error searching videos with title:", error);
+    console.error("Error searching videos:", error);
     return res.status(500).json({ message: "Error searching videos." });
   }
 }
@@ -182,10 +160,9 @@ module.exports = {
   uploadVideo,
   getVideoMetadata,
   deleteVideo,
+  searchVideos,
   fetchAllPublicVideos,
   viewVideoById,
-  searchVideosByDate,
   increaseViewCount,
-  searchVideosByTitle,
   fetchAllPrivateVideos,
 };
