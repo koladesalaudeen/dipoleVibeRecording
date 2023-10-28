@@ -15,11 +15,9 @@ async function uploadVideo(req, res) {
     const { title, summary, tags, public, private } = req.body;
 
     if (public && private) {
-      return res
-        .status(400)
-        .json({
-          message: "Please specify either public or private, not both.",
-        });
+      return res.status(400).json({
+        message: "Please specify either public or private, not both.",
+      });
     }
 
     let isPublic = true; // Assume public by default
@@ -51,6 +49,18 @@ async function fetchAllPublicVideos(req, res) {
     const { page } = req.query;
 
     const videoList = await videoService.fetchAllPublicVideos(page);
+
+    return res.status(200).json(videoList);
+  } catch (error) {
+    return res.status(500).json({ message: "Error retrieving videos" });
+  }
+}
+
+async function fetchAllPrivateVideos(req, res) {
+  try {
+    const { page, userId } = req.query;
+
+    const videoList = await videoService.fetchAllPrivateVideos(page, userId);
 
     return res.status(200).json(videoList);
   } catch (error) {
@@ -133,7 +143,7 @@ async function searchVideosByDate(req, res) {
   }
 }
 
-async function searchVideosByTitle(req, res) {
+async function searchVideos(req, res) {
   try {
     const { search } = req.query;
 
@@ -141,15 +151,15 @@ async function searchVideosByTitle(req, res) {
       return res.status(400).json({ message: "Parameter is missing." });
     }
 
-    const videos = await videoService.searchVideosByTitle(search);
+    const videos = await videoService.searchVideos(search);
 
     if (videos.length === 0) {
-      return res.status(404).json({ message: "No videos found ." });
+      return res.status(404).json({ message: "No videos found." });
     }
 
     return res.status(200).json(videos);
   } catch (error) {
-    console.error("Error searching videos with title:", error);
+    console.error("Error searching videos:", error);
     return res.status(500).json({ message: "Error searching videos." });
   }
 }
@@ -171,9 +181,9 @@ module.exports = {
   uploadVideo,
   getVideoMetadata,
   deleteVideo,
+  searchVideos,
   fetchAllPublicVideos,
   viewVideoById,
-  searchVideosByDate,
   increaseViewCount,
   searchVideosByTitle,
 };

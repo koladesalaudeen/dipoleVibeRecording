@@ -1,4 +1,5 @@
 const express = require("express");
+const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 const {
@@ -8,6 +9,7 @@ const {
 const {
   getRecommendedVideos,
 } = require("../controllers/recommendationController");
+const { searchVideos } = require("../controllers/videoController");
 const uploadVideo = require("../controllers/videoController").uploadVideo;
 const getVideoMetadata =
   require("../controllers/videoController").getVideoMetadata;
@@ -15,8 +17,8 @@ const deleteVideo = require("../controllers/videoController").deleteVideo;
 const viewVideoById = require("../controllers/videoController").viewVideoById;
 const fetchAllPublicVideos =
   require("../controllers/videoController").fetchAllPublicVideos;
-const searchVideosByTitle =
-  require("../controllers/videoController").searchVideosByTitle;
+const fetchAllPrivateVideos =
+  require("../controllers/videoController").fetchAllPrivateVideos;
 const increaseViewCount =
   require("../controllers/videoController").increaseViewCount;
 const cloudinaryStorage =
@@ -40,8 +42,29 @@ router.post(
 router.post("/updateViewCount", increaseViewCount);
 router.get("/metadata", getVideoMetadata);
 router.get("/fetch/public", fetchAllPublicVideos);
+router.get("/fetch/private", fetchAllPrivateVideos);
 router.get("/view/:videoId", viewVideoById);
-router.get("/search", searchVideosByTitle);
+router.get("/search", searchVideos);
 router.delete("/delete", deleteVideo);
 
 module.exports = router;
+router.get("/recommended", getRecommendedVideos);
+
+module.exports = router;
+
+// module.exports = (io) => {
+//     // Set up Multer to handle video file uploads
+//     const storage = multer.memoryStorage();
+//     const upload = multer({ storage: storage });
+
+//     // Define routes
+//     router.post('/upload', upload.single('video'), ffmpegConversionMiddleware, extractAndUploadAudio, uploadVideo);
+//     router.post('/updateViewCount/:videoId', (req, res) => increaseViewCount(io, req, res)); // Pass videoId as a route parameter
+//     router.get('/metadata', getVideoMetadata);
+//     router.get('/fetch/public', fetchAllPublicVideos);
+//     router.get('/view/:videoId', (req, res) => viewVideoById(io, req, res)); // Pass videoId as a route parameter
+//     router.get('/search', searchVideosByDate);
+//     router.delete('/delete', deleteVideo);
+
+//     return router;
+//   };
