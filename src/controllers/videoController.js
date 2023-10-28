@@ -12,7 +12,7 @@ async function uploadVideo(req, res) {
       return res.status(400).json({ message: "No video data provided." });
     }
 
-    const { title, summary, tags, public, private } = req.body;
+    const { title, summary, tag, public, private } = req.body;
 
     if (public && private) {
       return res.status(400).json({
@@ -28,7 +28,7 @@ async function uploadVideo(req, res) {
     const reqBody = {
       title: title,
       summary: summary,
-      tags: tags,
+      tags: tag,
       isPublic: isPublic,
     };
 
@@ -183,7 +183,7 @@ module.exports = {
   deleteVideo,
   searchVideos,
   fetchAllPublicVideos,
+  fetchAllPrivateVideos,
   viewVideoById,
   increaseViewCount,
-  searchVideosByTitle,
 };

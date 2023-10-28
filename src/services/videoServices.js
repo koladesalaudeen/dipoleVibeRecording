@@ -1,20 +1,13 @@
 const fs = require("fs");
 const util = require("util");
-const fs = require("fs");
-const util = require("util");
 const writeFileAsync = util.promisify(fs.writeFile);
 const createReadStream = fs.createReadStream;
 const OpenAI = require("openai");
 const PublicVideo = require("../models/public-video");
 const cloudinary = require("cloudinary").v2;
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
-const PublicComment = require("../models/privateComment");
-const OpenAI = require("openai");
-const PublicVideo = require("../models/public-video");
 const PrivateVideo = require("../models/private-video");
-const cloudinary = require("cloudinary").v2;
 const moment = require("moment");
-const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const PublicComment = require("../models/privateComment");
 //const { io } = require('../../index');
 
@@ -263,8 +256,6 @@ module.exports = {
   saveVideoAndTranscription,
   searchVideos,
   increaseViewCount,
-  searchVideosByTitle,
-  cloudinaryStorage,
   cloudinaryStorage,
   fetchAllPrivateVideos,
 };
