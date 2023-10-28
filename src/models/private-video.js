@@ -1,16 +1,16 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
+const PrivateComment = require("./privateComment");
 
-
-const privateVideoSchema = new mongoose.Schema({
+const privateVideoSchema = new mongoose.Schema(
+  {
     // Reference to the Comment model (foreign key)
     comment: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'PrivateComment',
+      ref: "PrivateComment",
     },
-    user: {
-      type: String,
-      ref: 'user',
-      required: true,
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
     },
     videoId: {
       type: String,
@@ -19,26 +19,41 @@ const privateVideoSchema = new mongoose.Schema({
     videoTitle: {
       type: String,
     },
-    videoURL:{
+    videoURL: {
       type: String,
     },
     description: {
       type: String,
     },
-    likes:{
-      type: Map
+    likes: {
+      type: Map,
     },
     views: {
-        type: String,
-      },
-    uploadedAt: {
-      type: Date,
-      default: Date.now,
+      type: String,
     },
     tags: {
       type: [String], // Array of strings
-      
+    },
+    commentCount: {
+      type: Number,
+      default: 0,
+    },
   },
-  });
+  {
+    timestamps: true,
+  }
+);
 
-  module.exports = mongoose.model('PrivateVideo', privateVideoSchema);
+privateVideoSchema.pre("save", async function (next) {
+  try {
+    const commentCount = await PrivateComment.countDocuments({
+      comment: this._id,
+    });
+    this.commentCount = commentCount;
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
+module.exports = mongoose.model("PrivateVideo", privateVideoSchema);
