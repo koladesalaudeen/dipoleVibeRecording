@@ -9,6 +9,7 @@ const {
   getRecommendedVideos,
 } = require("../controllers/recommendationController");
 const { searchVideos } = require("../controllers/videoController");
+const { searchVideosByDateAPI } = require("../controllers/videoController");
 const uploadVideo = require("../controllers/videoController").uploadVideo;
 const getVideoMetadata =
   require("../controllers/videoController").getVideoMetadata;
@@ -44,6 +45,7 @@ router.get("/fetch/public", fetchAllPublicVideos);
 router.get("/fetch/private", fetchAllPrivateVideos);
 router.get("/view/:videoId", viewVideoById);
 router.get("/search", searchVideos);
+router.get("/searchByDate", searchVideosByDateAPI);
 router.delete("/delete", deleteVideo);
 
 module.exports = router;

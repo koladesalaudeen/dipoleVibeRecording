@@ -210,18 +210,14 @@ async function fetchAllPrivateVideos(pageNumber, userId) {
 
 async function searchVideos(search) {
   try {
-    // Create a regex pattern for the title query to perform a case-insensitive search
-    const titlePattern = new RegExp(query, "i");
-
     // Search for videos with titles matching the title query
     const videos = await PublicVideo.find({
-      videoTitle: titlePattern, // Title matching the title query
       $or: [
         { videoTitle: { $regex: search, $options: "i" } },
         { tags: { $in: [search] } },
         { videoSummary: { $regex: search, $options: "i" } },
       ],
-    }).populate("comments");
+    }).populate("comment");
 
     return videos;
   } catch (error) {
@@ -230,6 +226,24 @@ async function searchVideos(search) {
 }
 
 // Search by Date
+async function searchVideosByDateAPI(startDate, endDate) {
+  try {
+    const formattedStartDate = moment(startDate, "YYYY-MM-DD").toISOString();
+    const formattedEndDate = moment(endDate, "YYYY-MM-DD")
+      .add(1, "day")
+      .toISOString();
+    const videos = await PublicVideo.find({
+      createdAt: {
+        $gte: formattedStartDate,
+        $lt: formattedEndDate,
+      },
+    }).populate("comment");
+
+    return videos;
+  } catch (error) {
+    throw new Error("Error searching videos by date.");
+  }
+}
 
 async function increaseViewCount(videoId) {
   try {
@@ -258,4 +272,5 @@ module.exports = {
   increaseViewCount,
   cloudinaryStorage,
   fetchAllPrivateVideos,
+  searchVideosByDateAPI,
 };
