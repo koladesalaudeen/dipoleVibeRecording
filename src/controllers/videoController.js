@@ -120,29 +120,6 @@ async function deleteVideo(req, res) {
   }
 }
 
-async function searchVideosByDate(req, res) {
-  try {
-    const { date } = req.query;
-
-    if (!date) {
-      return res.status(400).json({ message: "Date parameter is missing." });
-    }
-
-    const videos = await videoService.searchVideosByDate(date);
-
-    if (videos.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No videos found for the selected date." });
-    }
-
-    return res.status(200).json(videos);
-  } catch (error) {
-    console.error("Error searching videos by date:", error);
-    return res.status(500).json({ message: "Error searching videos." });
-  }
-}
-
 async function searchVideos(req, res) {
   try {
     const { search } = req.query;
@@ -161,6 +138,32 @@ async function searchVideos(req, res) {
   } catch (error) {
     console.error("Error searching videos:", error);
     return res.status(500).json({ message: "Error searching videos." });
+  }
+}
+
+// Search by Date
+async function searchVideosByDateAPI(req, res) {
+  try {
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+      return res
+        .status(400)
+        .json({ message: "Both startDate and endDate are required." });
+    }
+
+    const videos = await videoService.searchVideosByDateAPI(startDate, endDate);
+
+    if (videos.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No videos found for the specified date range." });
+    }
+
+    return res.status(200).json(videos);
+  } catch (error) {
+    console.error("Error searching videos by date:", error);
+    return res.status(500).json({ message: "Error searching videos by date." });
   }
 }
 
@@ -186,4 +189,5 @@ module.exports = {
   fetchAllPrivateVideos,
   viewVideoById,
   increaseViewCount,
+  searchVideosByDateAPI,
 };
