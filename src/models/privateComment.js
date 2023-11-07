@@ -22,7 +22,7 @@ const privateCommentSchema = new mongoose.Schema(
     },
     privateVideo: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "private-video",
+      ref: "PrivateVideo",
       required: true,
     },
     timestamp: {

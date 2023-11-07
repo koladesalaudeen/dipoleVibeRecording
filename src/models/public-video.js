@@ -55,7 +55,7 @@ const publicVideoSchema = new mongoose.Schema(
 publicVideoSchema.pre("save", async function (next) {
   try {
     const commentCount = await PublicComment.countDocuments({
-      comment: this._id,
+      PublicVideo: this._id,
     });
     this.commentCount = commentCount;
     return next();

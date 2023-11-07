@@ -93,7 +93,7 @@ async function saveVideoAndTranscription(videoBuffer, audioBuffer, reqBody) {
 
     return {
       message: "Video upload and transcription successful",
-      videoObj: videoData,
+      videoObj: video,
     };
   } catch (error) {
     console.error("Error:", error);
@@ -127,7 +127,7 @@ async function deleteVideo(publicId) {
 
 async function fetchVideoById(videoId) {
   try {
-    const video = await PublicVideo.findOne({ videoId });
+    const video = await PublicVideo.findById({ _id: videoId });
 
     return video;
   } catch (error) {
@@ -151,6 +151,7 @@ async function fetchAllPublicVideos(pageNumber) {
 
     const videos = await PublicVideo.populate(videoList[0].data, {
       path: "comment",
+      populate: { path: "replies" },
     });
 
     const response = {
@@ -161,7 +162,7 @@ async function fetchAllPublicVideos(pageNumber) {
           page,
           pageSize,
         },
-        data: videoList[0].data,
+        data: videos,
       },
     };
 

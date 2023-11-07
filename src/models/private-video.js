@@ -46,13 +46,13 @@ const privateVideoSchema = new mongoose.Schema(
 
 privateVideoSchema.pre("save", async function (next) {
   try {
-    const commentCount = await PrivateComment.countDocuments({
-      comment: this._id,
+    const commentCount = await PublicComment.countDocuments({
+      PrivateVideo: this._id,
     });
     this.commentCount = commentCount;
-    next();
+    return next();
   } catch (error) {
-    next(error);
+    return next(error);
   }
 });
 
