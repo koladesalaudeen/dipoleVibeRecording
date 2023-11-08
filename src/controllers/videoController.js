@@ -12,7 +12,7 @@ async function uploadVideoAndTranscription(req, res) {
       return res.status(400).json({ message: "No video data provided." });
     }
 
-    const { title, summary, tags, public, private } = req.body;
+    const { title, summary, tag, public, private } = req.body;
 
     if (public && private) {
       return res.status(400).json({
@@ -26,10 +26,13 @@ async function uploadVideoAndTranscription(req, res) {
     }
 
     const reqBody = {
+<<<<<<< HEAD
       tag: tags,
+=======
+>>>>>>> main
       title: title,
       summary: summary,
-      tags: tags,
+      tags: tag,
       isPublic: isPublic,
     };
 
@@ -161,30 +164,7 @@ async function deleteVideo(req, res) {
   }
 }
 
-async function searchVideosByDate(req, res) {
-  try {
-    const { date } = req.query;
-
-    if (!date) {
-      return res.status(400).json({ message: "Date parameter is missing." });
-    }
-
-    const videos = await videoService.searchVideosByDate(date);
-
-    if (videos.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No videos found for the selected date." });
-    }
-
-    return res.status(200).json(videos);
-  } catch (error) {
-    console.error("Error searching videos by date:", error);
-    return res.status(500).json({ message: "Error searching videos." });
-  }
-}
-
-async function searchVideosByTitle(req, res) {
+async function searchVideos(req, res) {
   try {
     const { search } = req.query;
 
@@ -192,16 +172,42 @@ async function searchVideosByTitle(req, res) {
       return res.status(400).json({ message: "Parameter is missing." });
     }
 
-    const videos = await videoService.searchVideosByTitle(search);
+    const videos = await videoService.searchVideos(search);
 
     if (videos.length === 0) {
-      return res.status(404).json({ message: "No videos found ." });
+      return res.status(404).json({ message: "No videos found." });
     }
 
     return res.status(200).json(videos);
   } catch (error) {
-    console.error("Error searching videos with title:", error);
+    console.error("Error searching videos:", error);
     return res.status(500).json({ message: "Error searching videos." });
+  }
+}
+
+// Search by Date
+async function searchVideosByDateAPI(req, res) {
+  try {
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+      return res
+        .status(400)
+        .json({ message: "Both startDate and endDate are required." });
+    }
+
+    const videos = await videoService.searchVideosByDateAPI(startDate, endDate);
+
+    if (videos.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No videos found for the specified date range." });
+    }
+
+    return res.status(200).json(videos);
+  } catch (error) {
+    console.error("Error searching videos by date:", error);
+    return res.status(500).json({ message: "Error searching videos by date." });
   }
 }
 
@@ -222,11 +228,16 @@ module.exports = {
   uploadVideo,
   getVideoMetadata,
   deleteVideo,
+  searchVideos,
   fetchAllPublicVideos,
+  fetchAllPrivateVideos,
   viewVideoById,
-  searchVideosByDate,
   increaseViewCount,
+<<<<<<< HEAD
   searchVideosByTitle,
   fetchAllPrivateVideos,
   uploadVideoAndTranscription,
+=======
+  searchVideosByDateAPI,
+>>>>>>> main
 };

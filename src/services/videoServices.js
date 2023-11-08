@@ -4,13 +4,17 @@ const writeFileAsync = util.promisify(fs.writeFile);
 const createReadStream = fs.createReadStream;
 const OpenAI = require("openai");
 const PublicVideo = require("../models/public-video");
-const PrivateVideo = require("../models/private-video");
 const cloudinary = require("cloudinary").v2;
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const PrivateVideo = require("../models/private-video");
+const moment = require("moment");
 const PublicComment = require("../models/privateComment");
 //const { io } = require('../../index');
 
 cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
@@ -21,11 +25,14 @@ const cloudinaryStorage = new CloudinaryStorage({
   params: {
     folder: "samples",
     allowed_formats: ["mp4", "avi", "mkv", "jpeg"],
+    folder: "samples",
+    allowed_formats: ["mp4", "avi", "mkv", "jpeg"],
   },
 });
 
 const OpenAIAPIKey = process.env.OPENAI_API_KEY;
 const openai = new OpenAI({
+  apiKey: OpenAIAPIKey,
   apiKey: OpenAIAPIKey,
 });
 
@@ -91,21 +98,32 @@ async function transcribeAudio(audioBuffer) {
     return transcriptionResult.text;
   } catch (error) {
     console.error("Error transcribing audio:", error);
+
     throw error;
   }
 }
 
 async function saveVideoAndTranscription(videoBuffer, audioBuffer, reqBody) {
   try {
+<<<<<<< HEAD
     const audioTranscription = await transcribeAudio(audioBuffer);
     // const videoUrl = await uploadVideo(videoBuffer);
+=======
+    // const audioTranscription = await transcribeAudio(audioBuffer);
+    const videoUrl = await uploadVideo(videoBuffer);
+>>>>>>> main
 
     const videoData = {
       videoTitle: reqBody.title,
       videoSummary: reqBody.summary,
       tags: reqBody.tags,
+<<<<<<< HEAD
       // videoURL: videoUrl,
       transcription: audioTranscription,
+=======
+      videoURL: videoUrl,
+      // transcription: audioTranscription,
+>>>>>>> main
     };
 
     const VideoModel = reqBody.isPublic ? PublicVideo : PrivateVideo;
@@ -115,7 +133,7 @@ async function saveVideoAndTranscription(videoBuffer, audioBuffer, reqBody) {
 
     return {
       message: "Video upload and transcription successful",
-      videoObj: videoData,
+      videoObj: video,
     };
   } catch (error) {
     console.error("Error:", error);
@@ -143,13 +161,13 @@ async function deleteVideo(publicId) {
     // Return deletion result
     return result.result === "ok";
   } catch (error) {
-    throw new Error("Error deleting video from Cloudinary: " + error.message);
+    console.error("Error:", error);
   }
 }
 
 async function fetchVideoById(videoId) {
   try {
-    const video = await PublicVideo.findOne({ videoId });
+    const video = await PublicVideo.findById({ _id: videoId });
 
     return video;
   } catch (error) {
@@ -171,6 +189,11 @@ async function fetchAllPublicVideos(pageNumber) {
       },
     ]);
 
+    const videos = await PublicVideo.populate(videoList[0].data, {
+      path: "comment",
+      populate: { path: "replies" },
+    });
+
     const response = {
       success: true,
       videos: {
@@ -179,7 +202,7 @@ async function fetchAllPublicVideos(pageNumber) {
           page,
           pageSize,
         },
-        data: videoList[0].data,
+        data: videos,
       },
     };
 
@@ -226,43 +249,40 @@ async function fetchAllPrivateVideos(pageNumber, userId) {
   }
 }
 
-async function searchVideosByDate(query) {
+async function searchVideos(search) {
   try {
-    // Parse the query date string into a JavaScript Date object
-    const date = new Date(query);
-
-    if (isNaN(date.getTime())) {
-      return []; // Invalid date format, return an empty array
-    }
-
-    // Search for videos uploaded on the specified date
+    // Search for videos with titles matching the title query
     const videos = await PublicVideo.find({
-      uploadedAt: {
-        $gte: date, // Greater than or equal to the specified date
-        $lt: new Date(date.getTime() + 24 * 60 * 60 * 1000), // Less than the next day
-      },
-    });
+      $or: [
+        { videoTitle: { $regex: search, $options: "i" } },
+        { tags: { $in: [search] } },
+        { videoSummary: { $regex: search, $options: "i" } },
+      ],
+    }).populate("comment");
+
     return videos;
   } catch (error) {
-    console.error("Error searching videos by date:", error);
-    throw error; // You can throw the error to handle it in the caller function
+    throw new Error("Error searching videos.");
   }
 }
 
-async function searchVideosByTitle(query) {
+// Search by Date
+async function searchVideosByDateAPI(startDate, endDate) {
   try {
-    // Create a regex pattern for the title query to perform a case-insensitive search
-    const titlePattern = new RegExp(query, "i");
-
-    // Search for videos with titles matching the title query
+    const formattedStartDate = moment(startDate, "YYYY-MM-DD").toISOString();
+    const formattedEndDate = moment(endDate, "YYYY-MM-DD")
+      .add(1, "day")
+      .toISOString();
     const videos = await PublicVideo.find({
-      videoTitle: titlePattern, // Title matching the title query
-    });
+      createdAt: {
+        $gte: formattedStartDate,
+        $lt: formattedEndDate,
+      },
+    }).populate("comment");
 
     return videos;
   } catch (error) {
-    console.error("Error searching videos by title:", error);
-    throw error; // You can throw the error to handle it in the caller function
+    throw new Error("Error searching videos by date.");
   }
 }
 
@@ -278,6 +298,7 @@ async function increaseViewCount(videoId) {
     await video.save();
   } catch (error) {
     console.error("Error increasing view count:", error);
+
     throw error;
   }
 }
@@ -288,10 +309,13 @@ module.exports = {
   fetchAllPublicVideos,
   fetchVideoById,
   saveVideoAndTranscription,
-  searchVideosByDate,
+  searchVideos,
   increaseViewCount,
-  searchVideosByTitle,
   cloudinaryStorage,
   fetchAllPrivateVideos,
+<<<<<<< HEAD
   uploadVideoAndSaveUserInfo,
+=======
+  searchVideosByDateAPI,
+>>>>>>> main
 };
