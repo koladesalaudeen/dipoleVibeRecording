@@ -117,42 +117,7 @@ mongoose.connect(process.env.MONGODB_URI, {
   console.error('Error connecting to MongoDB:', error.message);
 });
 
-const cache = new Map();
 
-async function checkBucketExistence(bucketName) {
-  if (cache.has(bucketName)) {
-    return cache.get(bucketName);
-  }
-
-  try {
-    await storage.bucket(bucketName).get();
-    cache.set(bucketName, true); 
-    return true;
-  } catch (error) {
-    if (error.code === 404) {
-      cache.set(bucketName, false); 
-      return false;
-    }
-    throw error; 
-  }
-}
-
-async function createBucketIfNotExist() {
-  const bucketName = 'dipole-vibe-recordings';
-
-  const bucketExists = await checkBucketExistence(bucketName);
-
-  if (!bucketExists) {
-    try {
-      await storage.createBucket(bucketName);
-      console.log('Bucket "dipole-vibe-recordings" created.');
-    } catch (error) {
-      console.error(`Error creating bucket: ${error.message}`);
-    }
-  }
-}
-
-createBucketIfNotExist();
 
 app.use(cors());
 // Use the video routes
