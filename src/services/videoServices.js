@@ -12,27 +12,21 @@ const PublicComment = require("../models/privateComment");
 //const { io } = require('../../index');
 
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
+  cloud_name:process.env.CLOUDINARY_CLOUD_NAME, 
+  api_key:process.env.CLOUDINARY_API_KEY,   
+  api_secret:process.env.CLOUDINARY_API_SECRET, 
 });
 
 const cloudinaryStorage = new CloudinaryStorage({
   cloudinary,
   params: {
     folder: "samples",
-    allowed_formats: ["mp4", "avi", "mkv", "jpeg"],
-    folder: "samples",
-    allowed_formats: ["mp4", "avi", "mkv", "jpeg"],
+    allowed_formats: ["mp4", "avi", "mkv", "jpeg", "mov"],
   },
 });
 
 const OpenAIAPIKey = process.env.OPENAI_API_KEY;
 const openai = new OpenAI({
-  apiKey: OpenAIAPIKey,
   apiKey: OpenAIAPIKey,
 });
 
@@ -47,7 +41,8 @@ async function uploadVideo(videoBuffer) {
 
     return secure_url;
   } catch (error) {
-    throw new Error("Error uploading video to Cloudinary: " + error.message);
+    console.error("Error uploading video to Cloudinary:", error);
+    // throw new Error("Error uploading video to Cloudinary: " + JSON.stringify(error));
   }
 }
 
@@ -65,6 +60,7 @@ async function transcribeAudio(audioBuffer) {
     });
 
     fs.unlinkSync(tempFilePath);
+    console.log( transcriptionResult.text )
     return transcriptionResult.text;
   } catch (error) {
     console.error("Error transcribing audio:", error);
@@ -73,9 +69,9 @@ async function transcribeAudio(audioBuffer) {
   }
 }
 
-async function saveVideoAndTranscription(videoBuffer, audioBuffer, reqBody) {
+async function saveVideoAndTranscription(videoBuffer, reqBody) {
   try {
-    // const audioTranscription = await transcribeAudio(audioBuffer);
+    // const audioTranscription = await transcribeAudio(videoBuffer);
     const videoUrl = await uploadVideo(videoBuffer);
 
     const videoData = {

@@ -5,14 +5,16 @@ const cloudinary = require("cloudinary").v2;
 
 async function uploadVideo(req, res) {
   try {
-    const videoBuffer = req.convertedVideo;
-    const audioBuffer = req.extractedAudio;
+    // const videoBuffer = req.convertedVideo;
+    // const audioBuffer = req.extractedAudio;
+    const videoBuffer = req.file.buffer;
 
     if (!videoBuffer) {
       return res.status(400).json({ message: "No video data provided." });
     }
 
     const { title, summary, tag, public, private } = req.body;
+    
 
     if (public && private) {
       return res.status(400).json({
@@ -34,9 +36,10 @@ async function uploadVideo(req, res) {
 
     const message = await videoService.saveVideoAndTranscription(
       videoBuffer,
-      audioBuffer,
+      // audioBuffer,
       reqBody
     );
+    
     res.status(200).json({ message: message });
   } catch (error) {
     console.error(error);
