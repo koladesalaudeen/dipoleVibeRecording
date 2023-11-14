@@ -7,10 +7,13 @@ const UserSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    userName: {
+    firstName: {
       type: String,
     },
-    name: {
+    lastName: {
+      type: String,
+    },
+    profileImageUrl: {
       type: String,
     },
     videoPrivate: [
