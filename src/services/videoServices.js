@@ -73,19 +73,13 @@ async function saveVideoAndTranscription(videoBuffer, reqBody) {
   try {
     // const audioTranscription = await transcribeAudio(videoBuffer);
     const videoUrl = await uploadVideo(videoBuffer);
->>>>>>> main
 
     const videoData = {
       videoTitle: reqBody.title,
       videoSummary: reqBody.summary,
       tags: reqBody.tags,
-<<<<<<< HEAD
-      // videoURL: videoUrl,
-      transcription: audioTranscription,
-=======
       videoURL: videoUrl,
       // transcription: audioTranscription,
->>>>>>> main
     };
 
     const VideoModel = reqBody.isPublic ? PublicVideo : PrivateVideo;
@@ -276,9 +270,5 @@ module.exports = {
   increaseViewCount,
   cloudinaryStorage,
   fetchAllPrivateVideos,
-<<<<<<< HEAD
-  uploadVideoAndSaveUserInfo,
-=======
   searchVideosByDateAPI,
->>>>>>> main
 };
