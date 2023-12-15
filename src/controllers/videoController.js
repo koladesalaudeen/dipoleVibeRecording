@@ -3,7 +3,7 @@ const PublicVideo = require("../models/public-video");
 
 const cloudinary = require("cloudinary").v2;
 
-async function uploadVideoAndTranscription(req, res) {
+async function uploadVideo(req, res) {
   try {
     // const videoBuffer = req.convertedVideo;
     // const audioBuffer = req.extractedAudio;
