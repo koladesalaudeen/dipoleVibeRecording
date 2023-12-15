@@ -8,11 +8,23 @@ const SharedSchema = new mongoose.Schema(
       ref: "user",
       required: true,
     },
-    privateVideo: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "private-video",
+    videoURL: {
+      type: String,
       required: true,
     },
+    recipientsMail: {
+      type: [String],
+      ref: "user",
+      required: true,
+    },
+    title: {
+      type: String,
+      required: true
+    },
+    summary: {
+      type: String,
+      required: true
+    }
   },
   {
     timestamps: true,

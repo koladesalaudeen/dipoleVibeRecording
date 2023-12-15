@@ -12,27 +12,21 @@ const PublicComment = require("../models/privateComment");
 //const { io } = require('../../index');
 
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
+  cloud_name:process.env.CLOUDINARY_CLOUD_NAME, 
+  api_key:process.env.CLOUDINARY_API_KEY,   
+  api_secret:process.env.CLOUDINARY_API_SECRET, 
 });
 
 const cloudinaryStorage = new CloudinaryStorage({
   cloudinary,
   params: {
     folder: "samples",
-    allowed_formats: ["mp4", "avi", "mkv", "jpeg"],
-    folder: "samples",
-    allowed_formats: ["mp4", "avi", "mkv", "jpeg"],
+    allowed_formats: ["mp4", "avi", "mkv", "jpeg", "mov"],
   },
 });
 
 const OpenAIAPIKey = process.env.OPENAI_API_KEY;
 const openai = new OpenAI({
-  apiKey: OpenAIAPIKey,
   apiKey: OpenAIAPIKey,
 });
 
@@ -47,37 +41,8 @@ async function uploadVideo(videoBuffer) {
 
     return secure_url;
   } catch (error) {
-    throw new Error("Error uploading video to Cloudinary: " + error.message);
-  }
-}
-
-async function uploadVideoAndSaveUserInfo(videoBuffer, reqBody) {
-  try {
-    // Upload the video to Cloudinary
-    const videoUrl = await uploadVideo(videoBuffer);
-
-    // Create a new user video data object
-    const videoData = {
-      videoTitle: reqBody.title,
-      videoSummary: reqBody.summary,
-      tags: reqBody.tags,
-      videoURL: videoUrl,
-    };
-
-    // Assuming you have a UserVideo model for storing user information
-    const VideoModel = reqBody.isPublic ? PublicVideo : PrivateVideo;
-
-    // Save the user video information to the database
-    const video = new VideoModel(videoData);
-    await video.save();
-
-    return {
-      message: "Video upload and user information save successful",
-      videoObj: videoData,
-    };
-  } catch (error) {
-    console.error("Error:", error);
-    throw error;
+    console.error("Error uploading video to Cloudinary:", error);
+    // throw new Error("Error uploading video to Cloudinary: " + JSON.stringify(error));
   }
 }
 
@@ -95,6 +60,7 @@ async function transcribeAudio(audioBuffer) {
     });
 
     fs.unlinkSync(tempFilePath);
+    console.log( transcriptionResult.text )
     return transcriptionResult.text;
   } catch (error) {
     console.error("Error transcribing audio:", error);
@@ -103,13 +69,9 @@ async function transcribeAudio(audioBuffer) {
   }
 }
 
-async function saveVideoAndTranscription(videoBuffer, audioBuffer, reqBody) {
+async function saveVideoAndTranscription(videoBuffer, reqBody) {
   try {
-<<<<<<< HEAD
-    const audioTranscription = await transcribeAudio(audioBuffer);
-    // const videoUrl = await uploadVideo(videoBuffer);
-=======
-    // const audioTranscription = await transcribeAudio(audioBuffer);
+    // const audioTranscription = await transcribeAudio(videoBuffer);
     const videoUrl = await uploadVideo(videoBuffer);
 >>>>>>> main
 
@@ -133,7 +95,7 @@ async function saveVideoAndTranscription(videoBuffer, audioBuffer, reqBody) {
 
     return {
       message: "Video upload and transcription successful",
-      videoObj: video,
+      videoData: video,
     };
   } catch (error) {
     console.error("Error:", error);
@@ -304,6 +266,7 @@ async function increaseViewCount(videoId) {
 }
 
 module.exports = {
+  uploadVideo,
   getVideoMetadata,
   deleteVideo,
   fetchAllPublicVideos,
