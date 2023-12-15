@@ -40,11 +40,46 @@ async function uploadVideo(req, res) {
       reqBody
     );
     
-    res.status(200).json({ message: message });
+    res.status(200).json( { message: message} );
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Error uploading video." });
   }
+}
+
+async function uploadPrivateVideo(req, res){
+try{ 
+   const videoBuffer = req.file.buffer;
+
+  if (!videoBuffer) {
+    return res.status(400).json({ message: "No video data provided." });
+  }
+
+  const { title, summary, tag, public, private } = req.body;
+
+  let isPublic = true; // Assume public by default
+  if (private) {
+    isPublic = false;
+  }
+
+  const reqBody = {
+    title: title,
+    summary: summary,
+    tags: tag,
+    isPublic: isPublic,
+  };
+
+  const message = await videoService.saveVideoAndTranscription(
+    videoBuffer,
+    // audioBuffer,
+    reqBody
+  );
+  res.status(200).json( { message: message} );
+}
+catch(error){
+  console.error(error);
+  return res.status(500).json({ message: "Error uploading video." });
+}
 }
 
 async function fetchAllPublicVideos(req, res) {
@@ -193,4 +228,5 @@ module.exports = {
   viewVideoById,
   increaseViewCount,
   searchVideosByDateAPI,
+  uploadPrivateVideo
 };

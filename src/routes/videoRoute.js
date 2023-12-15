@@ -5,24 +5,20 @@ const {
   ffmpegConversionMiddleware,
   extractAndUploadAudio,
 } = require("../middleware/ffmpeg");
-const {
-  getRecommendedVideos,
-} = require("../controllers/recommendationController");
+const {getRecommendedVideos} = require("../controllers/recommendationController");
 const { searchVideos } = require("../controllers/videoController");
 const { searchVideosByDateAPI } = require("../controllers/videoController");
 const uploadVideo = require("../controllers/videoController").uploadVideo;
-const getVideoMetadata =
-  require("../controllers/videoController").getVideoMetadata;
+const getVideoMetadata = require("../controllers/videoController").getVideoMetadata;
 const deleteVideo = require("../controllers/videoController").deleteVideo;
 const viewVideoById = require("../controllers/videoController").viewVideoById;
-const fetchAllPublicVideos =
-  require("../controllers/videoController").fetchAllPublicVideos;
-const fetchAllPrivateVideos =
-  require("../controllers/videoController").fetchAllPrivateVideos;
-const increaseViewCount =
-  require("../controllers/videoController").increaseViewCount;
-const cloudinaryStorage =
-  require("../services/videoServices").cloudinaryStorage;
+const fetchAllPublicVideos = require("../controllers/videoController").fetchAllPublicVideos;
+const fetchAllPrivateVideos = require("../controllers/videoController").fetchAllPrivateVideos;
+const increaseViewCount = require("../controllers/videoController").increaseViewCount;
+const uploadPrivateVideo = require("../controllers/videoController").uploadPrivateVideo;
+const shareVideo = require("../controllers/videoController").shareVideo;
+
+const cloudinaryStorage = require("../services/videoServices").cloudinaryStorage;
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -39,6 +35,16 @@ router.post(
   // extractAndUploadAudio,
   uploadVideo
 );
+router.post(
+  "/upload/private",
+  upload.single("video"),
+  uploadPrivateVideo
+)
+// router.post(
+//   "/share",
+//   upload.single("video"),
+//   shareVideo
+// )
 router.post("/updateViewCount", increaseViewCount);
 router.get("/metadata", getVideoMetadata);
 router.get("/fetch/public", fetchAllPublicVideos);
@@ -48,7 +54,6 @@ router.get("/search", searchVideos);
 router.get("/searchByDate", searchVideosByDateAPI);
 router.delete("/delete", deleteVideo);
 
-module.exports = router;
 router.get("/recommended", getRecommendedVideos);
 
 module.exports = router;

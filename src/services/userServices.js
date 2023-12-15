@@ -11,6 +11,16 @@ const deleteUser = async (userId) => {
   await user.remove();
 };
 
+async function findUsersByEmail(recipientsMail) {
+  try {
+    const users = await User.find({ email: { $in: recipientsMail } });
+    return users;
+  } catch (error) {
+    throw error;
+  }
+}
+
 module.exports = {
   deleteUser,
+  findUsersByEmail
 };

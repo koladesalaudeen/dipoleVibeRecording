@@ -89,7 +89,7 @@ async function saveVideoAndTranscription(videoBuffer, reqBody) {
 
     return {
       message: "Video upload and transcription successful",
-      videoObj: video,
+      videoData: video,
     };
   } catch (error) {
     console.error("Error:", error);
@@ -260,6 +260,7 @@ async function increaseViewCount(videoId) {
 }
 
 module.exports = {
+  uploadVideo,
   getVideoMetadata,
   deleteVideo,
   fetchAllPublicVideos,
